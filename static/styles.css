@@ -91,8 +91,10 @@ p { margin: 0 0 16px; }
 .nav__cta { margin-top: 24px; }
 
 /* The ::before layer draws the logo motif behind dark bands and the ARB+ showcase. */
-.page-hero, .band--navy, .vm__card--dark, .slide--product, .showcase { position: relative; overflow: hidden; isolation: isolate; }
-.page-hero::before, .band--navy::before, .vm__card--dark::before, .slide--product::before, .showcase::before { content: ""; position: absolute; z-index: -1; background: url("/assets/motif.svg") no-repeat center / contain; pointer-events: none; }
+.page-hero, .band--navy, .vm__card--dark, .showcase { position: relative; overflow: hidden; isolation: isolate; }
+.page-hero::before, .band--navy::before, .vm__card--dark::before, .showcase::before { content: ""; position: absolute; z-index: -1; background: url("/assets/motif.svg") no-repeat center / contain; pointer-events: none; }
+/* Phones have no free corner for the motif, so it shows from tablet up. */
+.page-hero::before, .band--navy::before, .showcase::before { display: none; }
 
 /* Hero banner slider. Slides sit in a scroll-snap track, so phones can swipe without JS. */
 .hero { position: relative; background: var(--navy-deep); color: var(--white); }
@@ -100,7 +102,6 @@ p { margin: 0 0 16px; }
 .hero__track::-webkit-scrollbar { display: none; }
 .slide { position: relative; flex: 0 0 100%; display: flex; align-items: center; padding: 40px 0 80px; scroll-snap-align: start; overflow: hidden; isolation: isolate; }
 .slide--product { background: radial-gradient(900px 500px at 90% 0%, rgba(21,96,174,.55), transparent 65%), var(--navy-deep); }
-.slide--product::before { top: -90px; right: -100px; width: 220px; height: 220px; opacity: .2; }
 .slide__bg { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; max-width: none; object-fit: cover; }
 .slide--photo { background: var(--navy-deep); }
 .slide--photo::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(6,33,61,.45), rgba(6,33,61,.92) 62%); }
@@ -193,33 +194,19 @@ p { margin: 0 0 16px; }
 .pcard__logo { height: 34px; width: auto; max-width: 100%; object-fit: contain; }
 .pcard__body p { flex: 1; font-size: .9375rem; color: var(--muted); }
 
-/* Card picture: device on a teal disc, floating chips and icon bubbles around it. */
-.art { position: relative; place-self: stretch; display: grid; place-items: center; }
-.art__disc { position: absolute; left: 50%; top: 50%; width: 196px; height: 196px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c9f2ee, var(--teal-light) 75%); opacity: .7; transform: translate(-50%, -50%); }
-.art__device { position: relative; z-index: 1; display: grid; place-items: center; width: 100%; }
-.art__portrait { width: 200px; height: 200px; border-radius: 50%; object-fit: cover; box-shadow: 0 14px 30px rgba(6,33,61,.2); }
-.art__frame { width: 100%; height: 200px; border-radius: 16px; object-fit: cover; box-shadow: 0 14px 30px rgba(6,33,61,.2); }
-.chip { position: absolute; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 10px; background: var(--white); box-shadow: 0 8px 20px rgba(6,33,61,.16); font-size: .6875rem; color: var(--navy); white-space: nowrap; }
-.chip b { font-weight: 600; }
-.chip .ico { width: 16px; height: 16px; color: var(--teal-dark); }
-.chip--1 { top: 8%; left: 0; }
-.chip--2 { bottom: 6%; right: 0; }
-.bubble { position: absolute; z-index: 2; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--white); box-shadow: 0 6px 16px rgba(6,33,61,.16); color: var(--blue); }
-.bubble .ico { width: 18px; height: 18px; }
-.bubble--1 { top: 6%; right: 6%; }
-.bubble--2 { bottom: 10%; left: 6%; }
-/* In the hero the mockup is large, so the disc would hide behind it. Chips sit just outside the screen. */
-.slide__visual .art__disc { display: none; }
-.slide__visual .art { padding: 20px 0; }
+
+/* Card picture: round photo, two small icon badges on the circle edge (at 45 degrees). */
+.pic { position: relative; width: 200px; height: 200px; }
+.pic img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; box-shadow: 0 14px 30px rgba(6,33,61,.18); }
+.pic__icon { position: absolute; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--white); color: var(--teal-dark); box-shadow: 0 6px 16px rgba(6,33,61,.16); }
+.pic__icon .ico { width: 20px; height: 20px; }
+.pic__icon--1 { top: 9px; left: 9px; }
+.pic__icon--2 { right: 9px; bottom: 9px; }
 
 /* ARB+ showcase: mockup with floating badges, feature cards beside it. */
 .showcase::before { top: 20%; right: -140px; width: 300px; height: 300px; opacity: .1; }
 .showcase__grid { display: grid; gap: 24px; }
-.showcase__visual { position: relative; padding: 22px 6px 26px; }
-.badge { position: absolute; z-index: 1; padding: 8px 14px; border-radius: 999px; background: var(--white); box-shadow: var(--shadow); font-size: .8125rem; font-weight: 600; color: var(--navy); }
-.badge::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--teal); }
-.badge--a { top: 0; right: 8%; }
-.badge--b { left: 4%; bottom: 0; }
+.showcase__visual { position: relative; }
 .showcase__list { display: grid; gap: 12px; }
 .fcard { padding: 18px 20px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); }
 .fcard--on { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,167,157,.12); }
@@ -453,6 +440,7 @@ a.contact__item:hover { border-color: var(--teal); }
   .mockup__chart { height: 110px; }
   .hero__actions { flex-direction: row; }
   .section { padding: 80px 0; }
+  .page-hero::before, .band--navy::before, .showcase::before { display: block; }
   .section--first { padding-top: 56px; }
   .section--flush-top { padding-top: 0; }
   .band { padding: 80px 0; }
@@ -513,7 +501,6 @@ a.contact__item:hover { border-color: var(--teal); }
   .slide--news h2 { font-size: 2.25rem; }
   .slide__visual { max-width: none; }
   .slide__visual .mockup { transform: perspective(1400px) rotateY(-6deg); }
-  .slide--product::before { top: auto; right: auto; left: -120px; bottom: -120px; width: 320px; height: 320px; opacity: .15; }
   .slide--photo::after { background: linear-gradient(90deg, rgba(6,33,61,.95) 0%, rgba(6,33,61,.82) 42%, rgba(6,33,61,.15) 100%); }
 
   .band { padding: 96px 0; }

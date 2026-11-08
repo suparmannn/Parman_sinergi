@@ -558,8 +558,7 @@ def hero_slider():
           <a href="/produk-layanan/" class="btn btn--outline-light">Lihat Produk</a>
         </div>
       </div>
-      <div class="slide__visual">%s</div>''' % art(MOCKUP_LAPTOP, [('cloud', 'Cloud Tier 3'), ('shield', 'Sesuai POJK')],
-                                                    ['db', 'growth'])),
+      <div class="slide__visual">%s</div>''' % MOCKUP_LAPTOP),
         ('slide--photo slide--news', '<img src="%s" alt="" class="slide__bg" loading="lazy">' % e(news['image']), '''
       <div class="slide__text">
         <p class="slide__kicker">Berita terbaru · %s</p>
@@ -585,13 +584,11 @@ def hero_slider():
 </section>''' % (''.join(out), dots)
 
 
-def art(device, chips, bubbles, disc=True):
-    """Product card picture: the device on a teal disc, with floating feature chips and icon bubbles.
-    Chip labels name real product features. The whole picture is decorative: the card text carries the facts."""
-    return '<div class="art" aria-hidden="true">%s<div class="art__device">%s</div>%s%s</div>' % (
-        '<span class="art__disc"></span>' if disc else '', device,
-        ''.join('<span class="chip chip--%d">%s<b>%s</b></span>' % (n, icon(ic, 'ico'), e(t)) for n, (ic, t) in enumerate(chips, 1)),
-        ''.join('<span class="bubble bubble--%d">%s</span>' % (n, icon(ic, 'ico')) for n, ic in enumerate(bubbles, 1)))
+def pic(src, width, height, icons):
+    """Product card picture: a round photo with two small icon badges on its edge. Decorative only."""
+    return '<div class="pic" aria-hidden="true"><img src="/assets/%s" alt="" width="%d" height="%d" loading="lazy">%s</div>' % (
+        src, width, height,
+        ''.join('<span class="pic__icon pic__icon--%d">%s</span>' % (n, icon(ic, 'ico')) for n, ic in enumerate(icons, 1)))
 
 
 def rail_carousel(cards, label):
@@ -613,12 +610,9 @@ def build_home():
         for n, (ic, title, txt, href, more) in enumerate(SERVICES, 1))
     # The three card pictures are AI-generated illustrations (Gemini), not photos of Sinergi staff or clients.
     featured = [
-        (FLAGSHIP, art('<img src="/assets/ilustrasi-arb.jpg" alt="" class="art__frame" width="720" height="538" loading="lazy">',
-                       [('cloud', 'Cloud Tier 3'), ('shield', 'Sesuai POJK')], ['db', 'users'], disc=False)),
-        (PRODUCT['m-collection'], art('<img src="/assets/ilustrasi-m-collection.jpg" alt="" class="art__portrait" width="480" height="480" loading="lazy">',
-                                      [('check', 'Setoran tercatat'), ('printer', 'Cetak struk')], ['wallet', 'pin'], disc=False)),
-        (PRODUCT['m-approval'], art('<img src="/assets/ilustrasi-m-approval.jpg" alt="" class="art__portrait" width="480" height="480" loading="lazy">',
-                                    [('check', 'Disetujui'), ('pin', 'Dari luar kantor')], ['shield', 'users'], disc=False)),
+        (FLAGSHIP, pic('ilustrasi-arb.jpg', 720, 538, ['cloud', 'shield'])),
+        (PRODUCT['m-collection'], pic('ilustrasi-m-collection.jpg', 480, 480, ['wallet', 'printer'])),
+        (PRODUCT['m-approval'], pic('ilustrasi-m-approval.jpg', 480, 480, ['check', 'shield'])),
     ]
     pcards = ''.join('''
       <a href="/produk-layanan/%s/" class="pcard">
@@ -679,8 +673,6 @@ def build_home():
     <div class="showcase__grid">
       <div class="showcase__visual">
         %(mockup)s
-        <span class="badge badge--a">Sesuai POJK</span>
-        <span class="badge badge--b">Data center Tier 3</span>
       </div>
       <div class="showcase__list">
         <div class="fcard fcard--on"><h3>Berjalan di cloud</h3><p>3 data center Tier 3. Server DRC mengambil alih otomatis bila DC bermasalah.</p></div>
