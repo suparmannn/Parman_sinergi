@@ -259,7 +259,8 @@ def page(path, title, desc, body, section='', cta=True, image='', js='', in_site
   <meta property="og:description" content="{desc}">
   <meta property="og:image" content="{og_image}">
   <meta name="theme-color" content="#003c71">
-  <link rel="icon" href="/assets/logo.png">
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="apple-touch-icon" href="/assets/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
