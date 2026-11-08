@@ -37,6 +37,9 @@ ICONS = {
     'cloud': '<path d="M17.5 19a4.5 4.5 0 1 0-1.4-8.8A6 6 0 0 0 4.5 12.5 3.5 3.5 0 0 0 6 19Z"/>',
     'growth': '<path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
     'shield': '<path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+    'check': '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+    'printer': '<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/>',
+    'wallet': '<rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20M16 15h2"/>',
     'users': '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.6c2.4.3 4.2 2.1 4.9 5.4"/>',
 }
 
@@ -573,7 +576,8 @@ def hero_slider():
           <a href="/produk-layanan/" class="btn btn--outline-light">Lihat Produk</a>
         </div>
       </div>
-      <div class="slide__visual">%s</div>''' % MOCKUP_LAPTOP),
+      <div class="slide__visual">%s</div>''' % art(MOCKUP_LAPTOP, [('cloud', 'Cloud Tier 3'), ('shield', 'Sesuai POJK')],
+                                                    ['db', 'growth'])),
         ('slide--photo slide--news', '<img src="%s" alt="" class="slide__bg" loading="lazy">' % e(news['image']), '''
       <div class="slide__text">
         <p class="slide__kicker">Berita terbaru · %s</p>
@@ -599,6 +603,15 @@ def hero_slider():
 </section>''' % (''.join(out), dots)
 
 
+def art(device, chips, bubbles):
+    """Product card picture: the device on a teal disc, with floating feature chips and icon bubbles.
+    Chip labels name real product features. The whole picture is decorative: the card text carries the facts."""
+    return '<div class="art" aria-hidden="true"><span class="art__disc"></span><div class="art__device">%s</div>%s%s</div>' % (
+        device,
+        ''.join('<span class="chip chip--%d">%s<b>%s</b></span>' % (n, icon(ic, 'ico'), e(t)) for n, (ic, t) in enumerate(chips, 1)),
+        ''.join('<span class="bubble bubble--%d">%s</span>' % (n, icon(ic, 'ico')) for n, ic in enumerate(bubbles, 1)))
+
+
 def rail_carousel(cards, label):
     return '''<div class="rail-wrap">
       <button class="rail-btn rail-btn--prev" type="button" aria-label="Geser ke kiri"></button>
@@ -616,9 +629,14 @@ def build_home():
         <span class="scard__more">%s →</span>
       </a>''' % (href, n, icon(ic, 'ico'), e(title), e(txt), e(more))
         for n, (ic, title, txt, href, more) in enumerate(SERVICES, 1))
-    featured = [(FLAGSHIP, '<div class="pcard__laptop">%s</div>' % MOCKUP_LAPTOP),
-                (PRODUCT['m-collection'], PHONE_COLLECTION),
-                (PRODUCT['m-approval'], PHONE_APPROVAL)]
+    featured = [
+        (FLAGSHIP, art('<div class="pcard__laptop">%s</div>' % MOCKUP_LAPTOP,
+                       [('cloud', 'Cloud Tier 3'), ('shield', 'Sesuai POJK')], ['db', 'users'])),
+        (PRODUCT['m-collection'], art(PHONE_COLLECTION,
+                                      [('check', 'Setoran tercatat'), ('printer', 'Cetak struk')], ['wallet', 'pin'])),
+        (PRODUCT['m-approval'], art(PHONE_APPROVAL,
+                                    [('check', 'Disetujui'), ('pin', 'Dari luar kantor')], ['shield', 'users'])),
+    ]
     pcards = ''.join('''
       <a href="/produk-layanan/%s/" class="pcard">
         <div class="pcard__visual">%s</div>

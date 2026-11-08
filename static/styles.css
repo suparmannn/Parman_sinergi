@@ -198,7 +198,7 @@ p { margin: 0 0 16px; }
 /* Product cards: device visual on a soft gradient, product logo, short text. */
 .pcard { display: flex; flex-direction: column; overflow: hidden; background: var(--white); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); transition: transform .2s; }
 .pcard:hover { transform: translateY(-3px); }
-.pcard__visual { display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; height: 230px; padding: 20px; overflow: hidden; background: radial-gradient(circle at 50% 65%, rgba(72,209,204,.35), transparent 60%), linear-gradient(160deg, var(--mint), #dceaf6); }
+.pcard__visual { display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; height: 260px; padding: 20px; overflow: hidden; background: radial-gradient(circle at 50% 65%, rgba(72,209,204,.35), transparent 60%), linear-gradient(160deg, var(--mint), #dceaf6); }
 .pcard__laptop { width: 100%; max-width: 280px; }
 .pcard__laptop .mockup { box-shadow: 0 12px 30px rgba(6,33,61,.2); }
 .pcard__laptop .mockup__body { min-height: 120px; }
@@ -207,6 +207,23 @@ p { margin: 0 0 16px; }
 .pcard__body h3 { margin-bottom: 12px; }
 .pcard__logo { height: 34px; width: auto; max-width: 100%; object-fit: contain; }
 .pcard__body p { flex: 1; font-size: .9375rem; color: var(--muted); }
+
+/* Card picture: device on a teal disc, floating chips and icon bubbles around it. */
+.art { position: relative; place-self: stretch; display: grid; place-items: center; }
+.art__disc { position: absolute; left: 50%; top: 50%; width: 196px; height: 196px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c9f2ee, var(--teal-light) 75%); opacity: .7; transform: translate(-50%, -50%); }
+.art__device { position: relative; z-index: 1; display: grid; place-items: center; width: 100%; }
+.chip { position: absolute; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 10px; background: var(--white); box-shadow: 0 8px 20px rgba(6,33,61,.16); font-size: .6875rem; color: var(--navy); white-space: nowrap; }
+.chip b { font-weight: 600; }
+.chip .ico { width: 16px; height: 16px; color: var(--teal-dark); }
+.chip--1 { top: 8%; left: 0; }
+.chip--2 { bottom: 6%; right: 0; }
+.bubble { position: absolute; z-index: 2; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--white); box-shadow: 0 6px 16px rgba(6,33,61,.16); color: var(--blue); }
+.bubble .ico { width: 18px; height: 18px; }
+.bubble--1 { top: 6%; right: 6%; }
+.bubble--2 { bottom: 10%; left: 6%; }
+/* In the hero the mockup is large, so the disc would hide behind it. Chips sit just outside the screen. */
+.slide__visual .art__disc { display: none; }
+.slide__visual .art { padding: 20px 0; }
 
 /* ARB+ showcase: mockup with floating badges, feature cards beside it. */
 .showcase::before { top: 20%; right: -140px; width: 300px; height: 300px; opacity: .1; }
