@@ -104,8 +104,6 @@ p { margin: 0 0 16px; }
 .hero::before { right: -120px; top: 140px; width: 420px; height: 420px; background: rgba(72,209,204,.55); }
 .hero::after { left: -160px; top: -120px; width: 380px; height: 380px; background: rgba(21,96,174,.6); }
 .hero__grid { display: grid; gap: 40px; padding-top: 20px; }
-.tag-pill { display: inline-flex; align-items: center; gap: 10px; padding: 7px 14px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(255,255,255,.12); font-size: .82rem; font-weight: 500; }
-.tag-pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--teal-l); box-shadow: 0 0 0 4px rgba(72,209,204,.25); }
 .hero h1 { margin: 18px 0 16px; font-size: 2.9rem; color: var(--white); }
 .hero .hl { color: var(--teal-l); }
 .hero .lede { max-width: 470px; margin-bottom: 28px; color: rgba(255,255,255,.9); }
@@ -397,11 +395,10 @@ a.contact__item:hover { border-color: var(--teal); }
 .footer__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .footer__copy { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.14); font-size: .84rem; }
 
-/* Floating WhatsApp button: a round icon on phones, a labeled pill from tablet up. */
-.chat-float { position: fixed; right: 16px; bottom: 16px; z-index: 40; display: flex; align-items: center; justify-content: center; gap: 8px; width: 56px; height: 56px; border-radius: 999px; background: var(--teal-d); box-shadow: 0 10px 28px rgba(6,33,61,.3); font-size: .95rem; font-weight: 600; color: var(--white); transition: background-color .2s; }
-.chat-float:hover { background: var(--navy); }
-.chat-float svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.chat-float span { display: none; }
+/* Floating WhatsApp button: the WhatsApp logo only. The green passes 3:1 contrast against white. */
+.chat-float { position: fixed; right: 16px; bottom: 16px; z-index: 40; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: #1da851; box-shadow: 0 10px 28px rgba(6,33,61,.3); color: var(--white); transition: transform .2s; }
+.chat-float:hover { transform: scale(1.06); }
+.chat-float svg { width: 30px; height: 30px; fill: currentColor; }
 .nav-open .chat-float { display: none; }
 
 /* Scroll reveal: blocks rise in the first time they enter the screen. The script in build.py adds .in.
@@ -463,9 +460,7 @@ a.contact__item:hover { border-color: var(--teal); }
   .jobs { grid-template-columns: repeat(2, 1fr); }
   .footer__grid { grid-template-columns: repeat(3, 1fr); }
   .footer__office, .footer__contact { grid-column: auto; }
-  .chat-float { width: auto; height: 52px; padding: 0 20px 0 16px; }
-  .chat-float svg { width: 22px; height: 22px; }
-  .chat-float span { display: inline; }
+  .chat-float { right: 24px; bottom: 24px; width: 60px; height: 60px; }
 }
 
 /* Desktop */
