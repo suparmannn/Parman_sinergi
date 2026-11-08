@@ -165,7 +165,7 @@ p { margin: 0 0 16px; }
 .pc__more { margin-top: auto; font-weight: 600; }
 .pc__more::after { content: " →"; }
 
-/* Device frames. The screen holds a real screenshot (static/assets/ui/<slug>.png) or a simple app sketch. */
+/* Device frames. The screen holds a real screenshot (static/assets/ui/<slug>.png) or the SVG illustration. */
 .device { display: block; position: relative; }
 .device__screen { display: block; overflow: hidden; background: var(--white); border: solid var(--frame, var(--deep)); }
 .device__screen > img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
@@ -177,13 +177,6 @@ p { margin: 0 0 16px; }
 .device--phone { width: 150px; }
 .device--phone .device__screen { aspect-ratio: 9 / 16; border-width: 8px; border-radius: 30px 30px 0 0; border-bottom-width: 0; }
 .device--phone .device__screen::before { content: ""; position: absolute; left: 50%; top: 14px; width: 40px; height: 6px; border-radius: 99px; background: var(--frame, var(--deep)); transform: translateX(-50%); }
-/* App sketch: a title bar, one big panel, and three text lines. */
-.screen-ph { display: flex; flex-direction: column; gap: 7px; height: 100%; background: var(--white); }
-.screen-ph b { flex: none; height: 16px; margin-bottom: 5px; background: var(--blue); }
-.screen-ph i { flex: none; display: block; height: 8px; margin: 0 12%; border-radius: 6px; background: #e3edf6; }
-.screen-ph i:first-of-type { height: auto; aspect-ratio: 2.2; margin-bottom: 3px; border-radius: 10px; background: #edf3f9; }
-.screen-ph i:nth-of-type(3) { margin-right: 32%; }
-.screen-ph i:nth-of-type(4) { margin-right: 48%; }
 
 /* Vision and mission */
 .vision { text-align: center; }
@@ -403,10 +396,11 @@ a.contact__item:hover { border-color: var(--teal); }
 
 /* Scroll reveal: blocks rise in the first time they enter the screen. The script in build.py adds .in.
    Keep the selector list in sync with SITE_JS. No JS or reduced motion: everything shows at once. */
-@keyframes rise { from { opacity: 0; transform: translateY(26px); } }
+/* Slow and soft on purpose: the owner asked for smooth, unhurried movement. */
+@keyframes rise { from { opacity: 0; transform: translateY(32px); } }
 @media screen and (prefers-reduced-motion: no-preference) {
   .js :is(.tile, .pc, .story, .doc, .news__item, .sec__head, .page-hero__inner, .contact__item, .missions li):not(.in) { opacity: 0; }
-  .js :is(.tile, .pc, .story, .doc, .news__item, .sec__head, .page-hero__inner, .contact__item, .missions li).in { animation: rise .7s cubic-bezier(.2,.7,.2,1) calc(var(--i, 0) * 80ms) backwards; }
+  .js :is(.tile, .pc, .story, .doc, .news__item, .sec__head, .page-hero__inner, .contact__item, .missions li).in { animation: rise 1.1s cubic-bezier(.4,0,.2,1) calc(var(--i, 0) * 140ms) backwards; }
 }
 
 /* Tablet */

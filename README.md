@@ -25,7 +25,7 @@ Jangan buka file di `dist/` langsung dengan `file://`. Link memakai path absolut
 - Produk, lowongan, visi-misi, angka statistik: edit `build.py`.
 - Klien baru: tambah `[nama, kota]` di `content/clients.json`. Kalau kotanya baru, tambahkan juga di `ISLANDS` di `build.py`. Build gagal kalau kota belum terdaftar.
 - Berita baru: tambah objek di `content/posts.json` dengan format yang sama.
-- Screenshot aplikasi di bingkai laptop, tablet, atau ponsel: simpan sebagai `static/assets/ui/<slug>.png` atau `.jpg`, lalu build ulang. Contoh: `static/assets/ui/m-collection.png`. Tanpa file itu, layar memakai placeholder (logo produk dan garis abu-abu). Jenis bingkai per produk ada di `DEVICE` di `build.py`. Rasio layar: laptop 16:10, tablet 4:3, ponsel 9:16. Gambar yang rasionya beda dipotong, bagian atas tetap terlihat.
+- Screenshot aplikasi di bingkai laptop, tablet, atau ponsel: simpan sebagai `static/assets/ui/<slug>.png` atau `.jpg`, lalu build ulang. Contoh: `static/assets/ui/m-collection.png`. Tanpa file itu, layar memakai ilustrasi `static/assets/ui/<slug>.svg`. Jenis bingkai per produk ada di `DEVICE` di `build.py`. Rasio layar: laptop 16:10, tablet 4:3, ponsel 9:16. Gambar yang rasionya beda dipotong, bagian atas tetap terlihat.
 - Logo klien: file di `static/assets/klien/`, daftar dan nama BPR di `CLIENT_LOGOS` di `build.py`.
 
 ## Sebelum go-live

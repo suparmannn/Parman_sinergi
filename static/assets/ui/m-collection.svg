@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" font-family="Outfit, Helvetica, Arial, sans-serif">
+  <defs><linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06213d"/><stop offset=".5" stop-color="#1560ae"/><stop offset="1" stop-color="#00a79d"/></linearGradient></defs>
+  <rect width="360" height="640" fill="#f3f7fb"/>
+  <rect width="360" height="224" fill="url(#brand)"/>
+  <text x="24" y="27" font-size="12" font-weight="600" fill="#fff">09.41</text>
+  <rect x="312" y="17" width="24" height="11" rx="3" fill="#fff" fill-opacity=".8"/>
+  <text x="24" y="78" font-size="22" font-weight="700" fill="#fff">M-Collection</text>
+  <rect x="24" y="96" width="312" height="104" rx="18" fill="#fff" fill-opacity=".14" stroke="#fff" stroke-opacity=".25"/>
+  <text x="44" y="126" font-size="12" fill="#fff" fill-opacity=".8">Setoran hari ini</text>
+  <rect x="44" y="140" width="150" height="18" rx="9" fill="#fff"/>
+  <rect x="44" y="170" width="96" height="8" rx="4" fill="#fff" fill-opacity=".45"/>
+  <circle cx="290" cy="148" r="26" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="7"/>
+  <circle cx="290" cy="148" r="26" fill="none" stroke="#48d1cc" stroke-width="7" stroke-linecap="round" stroke-dasharray="114 164" transform="rotate(-90 290 148)"/>
+
+  <rect x="24" y="240" width="312" height="52" rx="26" fill="#00a79d"/>
+  <text x="180" y="272" font-size="15" font-weight="600" fill="#fff" text-anchor="middle">Terima setoran</text>
+
+  <text x="24" y="330" font-size="15" font-weight="600" fill="#0a1c30">Nasabah hari ini</text>
+  <rect x="16" y="344" width="328" height="180" rx="16" fill="#fff"/>
+  <g stroke="#eef3f8" stroke-width="1.5"><line x1="32" y1="404" x2="328" y2="404"/><line x1="32" y1="464" x2="328" y2="464"/></g>
+  <g font-size="13" font-weight="700" text-anchor="middle">
+    <circle cx="50" cy="374" r="17" fill="#dbe8f5"/><text x="50" y="379" fill="#1560ae">B</text>
+    <circle cx="50" cy="434" r="17" fill="#dff4f2"/><text x="50" y="439" fill="#007a73">S</text>
+    <circle cx="50" cy="494" r="17" fill="#dbe8f5"/><text x="50" y="499" fill="#1560ae">R</text>
+  </g>
+  <g fill="#0a1c30" fill-opacity=".75"><rect x="78" y="364" width="120" height="10" rx="5"/><rect x="78" y="424" width="104" height="10" rx="5"/><rect x="78" y="484" width="132" height="10" rx="5"/></g>
+  <g fill="#d5e1ec"><rect x="78" y="381" width="84" height="8" rx="4"/><rect x="78" y="441" width="96" height="8" rx="4"/><rect x="78" y="501" width="70" height="8" rx="4"/></g>
+  <g fill="#00a79d"><rect x="252" y="369" width="76" height="10" rx="5"/><rect x="262" y="429" width="66" height="10" rx="5"/><rect x="246" y="489" width="82" height="10" rx="5"/></g>
+
+  <rect y="584" width="360" height="56" fill="#fff"/>
+  <g fill="#d5e1ec"><circle cx="60" cy="610" r="9" fill="#00a79d"/><circle cx="140" cy="610" r="9"/><circle cx="220" cy="610" r="9"/><circle cx="300" cy="610" r="9"/></g>
+</svg>

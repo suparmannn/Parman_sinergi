@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" font-family="Outfit, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06213d"/><stop offset=".45" stop-color="#1560ae"/><stop offset="1" stop-color="#00a79d"/></linearGradient>
+    <clipPath id="card"><rect x="24" y="92" width="752" height="136" rx="18"/></clipPath>
+  </defs>
+  <rect width="800" height="600" fill="#f3f7fb"/>
+  <rect width="800" height="70" fill="#003c71"/>
+  <text x="28" y="45" font-size="22" font-weight="700" fill="#fff">Virtual Account</text>
+
+  <rect x="24" y="92" width="752" height="136" rx="18" fill="url(#brand)"/>
+  <g clip-path="url(#card)" fill="#fff" fill-opacity=".07"><circle cx="740" cy="100" r="90"/><circle cx="640" cy="240" r="60"/></g>
+  <text x="52" y="132" font-size="13" fill="#fff" fill-opacity=".75">Nomor Virtual Account</text>
+  <text x="52" y="180" font-size="32" font-weight="700" fill="#fff" letter-spacing="2">8808 •••• •••• ••••</text>
+  <rect x="652" y="148" width="96" height="36" rx="18" fill="#fff" fill-opacity=".18"/>
+  <text x="700" y="171" font-size="13" font-weight="600" fill="#fff" text-anchor="middle">Salin</text>
+
+  <text x="24" y="268" font-size="15" font-weight="600" fill="#0a1c30">Bayar lewat</text>
+  <g>
+    <rect x="24" y="284" width="176" height="96" rx="14" fill="#fff"/><rect x="216" y="284" width="176" height="96" rx="14" fill="#fff"/>
+    <rect x="408" y="284" width="176" height="96" rx="14" fill="#fff"/><rect x="600" y="284" width="176" height="96" rx="14" fill="#fff"/>
+    <circle cx="112" cy="320" r="18" fill="#1560ae"/><circle cx="304" cy="320" r="18" fill="#00a79d"/>
+    <circle cx="496" cy="320" r="18" fill="#003c71"/><circle cx="688" cy="320" r="18" fill="#48d1cc"/>
+    <g font-size="13" font-weight="600" fill="#0a1c30" text-anchor="middle">
+      <text x="112" y="364">ATM</text><text x="304" y="364">m-Banking</text><text x="496" y="364">Alfamart</text><text x="688" y="364">Indomaret</text>
+    </g>
+  </g>
+
+  <rect x="24" y="400" width="752" height="176" rx="16" fill="#fff"/>
+  <text x="44" y="432" font-size="15" font-weight="600" fill="#0a1c30">Setoran terbaru</text>
+  <g>
+    <circle cx="60" cy="470" r="15" fill="#dff4f2"/><circle cx="60" cy="510" r="15" fill="#dff4f2"/><circle cx="60" cy="550" r="15" fill="#dff4f2"/>
+    <path d="M60 463v14m-5-5 5 5 5-5M60 503v14m-5-5 5 5 5-5M60 543v14m-5-5 5 5 5-5" fill="none" stroke="#007a73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <g fill="#d5e1ec"><rect x="88" y="461" width="200" height="9" rx="4.5"/><rect x="88" y="501" width="170" height="9" rx="4.5"/><rect x="88" y="541" width="186" height="9" rx="4.5"/></g>
+    <g fill="#e8eef4"><rect x="88" y="476" width="110" height="7" rx="3.5"/><rect x="88" y="516" width="96" height="7" rx="3.5"/><rect x="88" y="556" width="120" height="7" rx="3.5"/></g>
+    <g fill="#0a1c30" fill-opacity=".8"><rect x="470" y="465" width="110" height="10" rx="5"/><rect x="470" y="505" width="90" height="10" rx="5"/><rect x="470" y="545" width="100" height="10" rx="5"/></g>
+    <g font-size="12" font-weight="600" fill="#1a7f43" text-anchor="middle">
+      <rect x="640" y="458" width="100" height="24" rx="12" fill="#e3f6ea"/><text x="690" y="474">Berhasil</text>
+      <rect x="640" y="498" width="100" height="24" rx="12" fill="#e3f6ea"/><text x="690" y="514">Berhasil</text>
+      <rect x="640" y="538" width="100" height="24" rx="12" fill="#e3f6ea"/><text x="690" y="554">Berhasil</text>
+    </g>
+  </g>
+</svg>

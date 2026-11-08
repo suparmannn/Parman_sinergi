@@ -145,14 +145,14 @@ DEVICE = {'coreplus': 'laptop', 'aplikasi-pelaporan-tks': 'tablet', 'e-kyc': 'ta
 
 
 def device(p):
-    """CSS device frame for a product. Put a real screenshot at static/assets/ui/<slug>.png (or .jpg) and the
-    build shows it in the frame. Until then the screen shows a simple app sketch."""
+    """CSS device frame for a product. The screen shows static/assets/ui/<slug>.png or .jpg (a real screenshot)
+    when the file exists, else the illustration static/assets/ui/<slug>.svg."""
     kind = DEVICE[p['slug']]
-    shot = next((f for f in ('%s.png' % p['slug'], '%s.jpg' % p['slug']) if (ROOT / 'static/assets/ui' / f).exists()), None)
-    screen = ('<img src="/assets/ui/%s" alt="">' % shot if shot else
-              '<span class="screen-ph"><b></b><i></i><i></i><i></i><i></i></span>')
+    shot = next(f for f in ('%s.png' % p['slug'], '%s.jpg' % p['slug'], '%s.svg' % p['slug'])
+                if (ROOT / 'static/assets/ui' / f).exists())
     base = '<span class="device__base"></span>' if kind == 'laptop' else ''
-    return '<span class="device device--%s" aria-hidden="true"><span class="device__screen">%s</span>%s</span>' % (kind, screen, base)
+    return ('<span class="device device--%s" aria-hidden="true"><span class="device__screen">'
+            '<img src="/assets/ui/%s" alt=""></span>%s</span>' % (kind, shot, base))
 
 
 CARD_TONES = ('navy', 'blue', 'teal', 'light', 'navy', 'teal', 'blue')
