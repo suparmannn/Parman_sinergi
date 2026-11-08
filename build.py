@@ -7,7 +7,6 @@ Preview: python3 -m http.server 8000 -d dist   (then open http://localhost:8000)
 import html
 import json
 import shutil
-from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -32,11 +31,18 @@ ICONS = {
     'pin': '<path d="M12 22s-7-6.3-7-12a7 7 0 0 1 14 0c0 5.7-7 12-7 12Z"/><circle cx="12" cy="10" r="2.5"/>',
     'mail': '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/>',
     'tel': '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>',
+    'db': '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+    'learn': '<path d="M22 9 12 4 2 9l10 5 10-5Z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/>',
+    'support': '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="m5.6 5.6 3.9 3.9M14.5 14.5l3.9 3.9M18.4 5.6l-3.9 3.9M9.5 14.5l-3.9 3.9"/>',
+    'cloud': '<path d="M17.5 19a4.5 4.5 0 1 0-1.4-8.8A6 6 0 0 0 4.5 12.5 3.5 3.5 0 0 0 6 19Z"/>',
+    'growth': '<path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
+    'shield': '<path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+    'users': '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.6c2.4.3 4.2 2.1 4.9 5.4"/>',
 }
 
 
-def icon(name):
-    return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % ICONS[name]
+def icon(name, cls='icon'):
+    return '<svg class="%s" viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % (cls, ICONS[name])
 
 
 # Products. "card" is the short text for cards; "summary" is the full lead; "body" is trusted HTML.
@@ -177,8 +183,36 @@ REDIRECTS = {
     ]
 }
 
-NAV = [('produk-layanan/', 'Produk & Layanan'), ('tentang-kami/', 'Tentang Kami'),
-       ('berita-acara/', 'Berita & Acara'), ('klien-kami/', 'Klien Kami'), ('karier/', 'Karier')]
+PRODUCT = {p['slug']: p for p in PRODUCTS}
+
+# Top-level menu. Items with children get a dropdown on desktop and an accordion on phones.
+NAV = [
+    ('produk-layanan/', 'Produk & Layanan',
+     [('produk-layanan/', 'Semua produk')] +
+     [('produk-layanan/%s/' % p['slug'], 'ARB+ Core Banking System' if p is FLAGSHIP else p['name']) for p in PRODUCTS]),
+    ('tentang-kami/', 'Tentang Kami',
+     [('tentang-kami/', 'Profil perusahaan'), ('tentang-kami/#visi-misi', 'Visi & misi'),
+      ('tentang-kami/#struktur', 'Struktur organisasi'), ('tentang-kami/#mitra', 'Mitra kami')]),
+    ('berita-acara/', 'Berita & Acara',
+     [('berita-acara/', 'Semua berita')] + [('category/%s/' % s, n) for s, n in CATEGORIES]),
+    ('klien-kami/', 'Klien Kami', []),
+    ('karier/', 'Karier', []),
+]
+
+
+def nav_html(section):
+    out = []
+    for href, label, children in NAV:
+        link = '<a href="/%s" class="nav__link"%s>%s</a>' % (
+            href, ' aria-current="page"' if href == section else '', e(label))
+        if not children:
+            out.append(link)
+            continue
+        out.append('<div class="nav__item">%s<button class="nav__toggle" type="button" aria-expanded="false" '
+                   'aria-label="Submenu %s"></button><div class="nav__menu">%s</div></div>' % (
+                       link, e(label), ''.join('<a href="/%s">%s</a>' % (h, e(t)) for h, t in children)))
+    return ''.join(out)
+
 
 MENU_JS = '''<script>
   const btn = document.querySelector('.menu-btn');
@@ -187,45 +221,61 @@ MENU_JS = '''<script>
     btn.setAttribute('aria-expanded', open);
     document.body.classList.toggle('nav-open', open);
   });
+  // Submenu toggles. Opening one submenu closes the others.
+  document.querySelectorAll('.nav__toggle').forEach(t => t.addEventListener('click', () => {
+    const item = t.parentElement;
+    const open = !item.classList.contains('open');
+    document.querySelectorAll('.nav__item.open').forEach(o => {
+      o.classList.remove('open');
+      o.querySelector('.nav__toggle').setAttribute('aria-expanded', false);
+    });
+    item.classList.toggle('open', open);
+    t.setAttribute('aria-expanded', open);
+  }));
 </script>'''
-
-CTA = '''
-<section class="cta">
-  <div class="container cta__inner">
-    <h2>Butuh dukungan optimal untuk Core Banking System?</h2>
-    <p>Bicara dengan tim kami tentang Core Banking System web-based yang andal dan efisien.</p>
-    <div class="cta__actions">
-      <a href="https://wa.me/%s" class="btn btn--light">Chat WhatsApp</a>
-      <a href="/kontak/" class="btn btn--outline-light">Kirim Pesan</a>
-    </div>
-  </div>
-</section>''' % WA
 
 FOOTER = '''
 <footer class="footer">
   <div class="container footer__grid">
-    <div>
+    <div class="footer__about">
       <img src="/assets/logo-white.png" alt="Sinergi" width="432" height="168" class="footer__logo" loading="lazy">
       <p>PT Sinergi Prakarsa Utama. Penyedia Core Banking System untuk BPR sejak 2009.</p>
+      <p class="footer__social"><a href="https://www.instagram.com/sinergic.co.id">Instagram</a><a href="https://www.facebook.com/profile.php?id=61551558174894">Facebook</a></p>
+    </div>
+    <div class="footer__office">
+      <h2>Kantor</h2>
+      <address><strong>Kantor Pusat</strong>Ruko The Prominence Blok 38-H No. 10, Jl. Jalur Sutera Boulevard, Alam Sutera, Panunggangan Timur, Pinang, Kota Tangerang, Banten 15143</address>
+      <address><strong>Kantor Cabang</strong>Ruko Klampis 21 Blok AA No. 2, Jl. Arief Rahman Hakim, Surabaya 60117</address>
     </div>
     <div>
-      <h2>Kantor Pusat</h2>
-      <address>Ruko The Prominence Blok 38-H No. 10, Jl. Jalur Sutera Boulevard, Alam Sutera, Panunggangan Timur, Pinang, Kota Tangerang, Banten 15143</address>
-      <h2>Kantor Cabang</h2>
-      <address>Ruko Klampis 21 Blok AA No. 2, Jl. Arief Rahman Hakim, Surabaya 60117</address>
+      <h2>Perusahaan</h2>
+      <ul class="footer__list">
+        <li><a href="/tentang-kami/">Tentang Kami</a></li>
+        <li><a href="/klien-kami/">Klien Kami</a></li>
+        <li><a href="/berita-acara/">Berita &amp; Acara</a></li>
+        <li><a href="/karier/">Karier</a></li>
+        <li><a href="/kontak/">Kontak</a></li>
+      </ul>
     </div>
     <div>
-      <h2>Kontak</h2>
+      <h2>Produk</h2>
+      <ul class="footer__list">%s</ul>
+    </div>
+    <div class="footer__contact">
+      <h2>Hubungi Kami</h2>
       <ul class="footer__list">
         <li><a href="tel:+622180821315">021-8082-1315</a></li>
         <li><a href="tel:+622180821316">021-8082-1316</a></li>
         <li><a href="mailto:cs@sinergic.co.id">cs@sinergic.co.id</a></li>
-        <li><a href="https://www.instagram.com/sinergic.co.id">Instagram</a> · <a href="https://www.facebook.com/profile.php?id=61551558174894">Facebook</a></li>
       </ul>
+      <div class="footer__actions">
+        <a href="https://wa.me/%s" class="btn btn--accent btn--sm">Chat WhatsApp</a>
+        <a href="/kontak/" class="btn btn--outline-light btn--sm">Kirim Pesan</a>
+      </div>
     </div>
   </div>
-  <div class="container"><p class="footer__copy">© 2026 PT Sinergi Prakarsa Utama</p></div>
-</footer>'''
+  <div class="footer__bar"><div class="container">© 2026 PT Sinergi Prakarsa Utama</div></div>
+</footer>''' % (''.join('<li><a href="/produk-layanan/%s/">%s</a></li>' % (p['slug'], e(p['name'])) for p in PRODUCTS), WA)
 
 SITEMAP = []
 
@@ -239,11 +289,8 @@ def write(path, doc, in_sitemap=True):
         SITEMAP.append(path)
 
 
-def page(path, title, desc, body, section='', cta=True, image='', js='', in_sitemap=True):
+def page(path, title, desc, body, section='', image='', js='', in_sitemap=True):
     full_title = title if not path else '%s | Sinergi' % title
-    nav = ''.join(
-        '<a href="/%s"%s>%s</a>' % (href, ' aria-current="page"' if href == section else '', e(label))
-        for href, label in NAV)
     og_image = image or SITE + '/assets/logo.png'
     doc = '''<!doctype html>
 <html lang="id">
@@ -268,12 +315,6 @@ def page(path, title, desc, body, section='', cta=True, image='', js='', in_site
 </head>
 <body>
   <a class="skip" href="#konten">Lewati ke konten</a>
-  <div class="topbar">
-    <div class="container topbar__inner">
-      <span>Core Banking System untuk BPR sejak 2009</span>
-      <span><a href="tel:+622180821315">021-8082-1315</a><a href="mailto:cs@sinergic.co.id">cs@sinergic.co.id</a><a href="https://wa.me/{wa}">WhatsApp</a></span>
-    </div>
-  </div>
   <header class="header">
     <div class="container header__bar">
       <a href="/" class="header__logo"><img src="/assets/logo.png" alt="Sinergi" width="432" height="168"></a>
@@ -286,29 +327,29 @@ def page(path, title, desc, body, section='', cta=True, image='', js='', in_site
   </header>
   <main id="konten">
 {body}
-{cta}
   </main>
 {footer}
-  <a href="https://wa.me/{wa}" class="wa-float" aria-label="Chat WhatsApp dengan Sinergi">{wa_icon}</a>
+  <a href="https://wa.me/{wa}" class="chat-float" aria-label="Chat WhatsApp dengan Sinergi">{chat_icon}<span>Chat WA</span></a>
 {menu_js}
 {js}
 </body>
 </html>
-'''.format(title=e(full_title), desc=e(desc), site=SITE, path=path, og_image=e(og_image), nav=nav,
-           body=body, cta=CTA if cta else '', footer=FOOTER, menu_js=MENU_JS, js=js, wa=WA,
-           wa_icon='<svg viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % ICONS['chat'])
+'''.format(title=e(full_title), desc=e(desc), site=SITE, path=path, og_image=e(og_image), nav=nav_html(section),
+           body=body, footer=FOOTER, menu_js=MENU_JS, js=js, wa=WA,
+           chat_icon='<svg viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % ICONS['chat'])
     write(path, doc, in_sitemap)
 
 
-def page_hero(eyebrow, h1, lead='', extra=''):
+def page_hero(crumb, h1, lead='', extra=''):
+    """Dark page header. crumb is trusted HTML for the breadcrumb after "Beranda" (it may hold a parent link)."""
     return '''
 <section class="page-hero">
   <div class="container">
-    <p class="eyebrow">%s</p>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Beranda</a><span aria-hidden="true">/</span>%s</nav>
     <h1>%s</h1>
     %s%s
   </div>
-</section>''' % (eyebrow, h1, '<p class="lead">%s</p>' % lead if lead else '', extra)
+</section>''' % (crumb, h1, '<p class="lead">%s</p>' % lead if lead else '', extra)
 
 
 def stats(items):
@@ -365,16 +406,6 @@ def post_card(p):
         when=tanggal(p['date']))
 
 
-def regions_summary():
-    out = []
-    for island, rows in BY_ISLAND.items():
-        cities = Counter(c for _, c in rows).most_common()
-        cities.sort(key=lambda x: (-x[1], x[0]))
-        out.append('<details><summary><span>%s</span><b>%d</b></summary><p>%s</p></details>' % (
-            e(island), len(rows), ' · '.join('%s %d' % (e(c), n) for c, n in cities)))
-    return ''.join(out)
-
-
 def text(v):
     return e(v).replace('\n', '<br>')
 
@@ -407,135 +438,347 @@ def render_blocks(blocks, title):
     return '\n'.join(out)
 
 
-def build_home():
-    body = '''
-<section class="hero">
-  <div class="container hero__grid">
-    <div>
-      <p class="eyebrow">Core Banking System untuk BPR</p>
-      <h1>Core Banking System terdepan untuk BPR di Indonesia</h1>
-      <p class="lead">ARB+ berbasis web, sesuai POJK, dan berjalan di cloud dengan data center Tier 3. Kami terus mengembangkannya sesuai kebutuhan Anda.</p>
-      <div class="hero__actions">
-        <a href="/kontak/" class="btn btn--primary">Jadwalkan Demo</a>
-        <a href="#produk" class="btn btn--ghost">Lihat Produk</a>
-      </div>
+MOCKUP_LAPTOP = '''<div class="mockup" aria-hidden="true">
+  <div class="mockup__bar"><span></span><span></span><span></span><em>ARB+ Core Banking System</em></div>
+  <div class="mockup__body">
+    <div class="mockup__side"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+    <div class="mockup__main">
+      <div class="mockup__tiles"><b></b><b></b><b></b></div>
+      <svg class="mockup__chart" viewBox="0 0 300 90" preserveAspectRatio="none">
+        <path d="M0 70 L40 62 L80 66 L120 48 L160 52 L200 34 L240 38 L300 16 L300 90 L0 90 Z" fill="rgba(0,167,157,.14)"/>
+        <path d="M0 70 L40 62 L80 66 L120 48 L160 52 L200 34 L240 38 L300 16" fill="none" stroke="#00a79d" stroke-width="2.5"/>
+      </svg>
+      <div class="mockup__rows"><i></i><i></i><i></i></div>
     </div>
-    <div class="mockup" aria-hidden="true">
-      <div class="mockup__bar"><span></span><span></span><span></span><em>ARB+ Core Banking System</em></div>
-      <div class="mockup__body">
-        <div class="mockup__side"><i class="on"></i><i></i><i></i><i></i><i></i></div>
-        <div class="mockup__main">
-          <div class="mockup__tiles"><b></b><b></b><b></b></div>
-          <svg class="mockup__chart" viewBox="0 0 300 90" preserveAspectRatio="none">
-            <path d="M0 70 L40 62 L80 66 L120 48 L160 52 L200 34 L240 38 L300 16 L300 90 L0 90 Z" fill="rgba(0,167,157,.14)"/>
-            <path d="M0 70 L40 62 L80 66 L120 48 L160 52 L200 34 L240 38 L300 16" fill="none" stroke="#00a79d" stroke-width="2.5"/>
-          </svg>
-          <div class="mockup__rows"><i></i><i></i><i></i></div>
+  </div>
+</div>'''
+
+# Phone screens for the two mobile apps. Abstract shapes only: no real or invented data.
+PHONE_COLLECTION = '''<div class="phone" aria-hidden="true"><div class="phone__screen">
+  <div class="phone__top"></div>
+  <i class="phone__line phone__line--short"></i>
+  <b class="phone__field"></b>
+  <i class="phone__line"></i>
+  <i class="phone__line phone__line--mid"></i>
+  <b class="phone__btn"></b>
+</div></div>'''
+
+PHONE_APPROVAL = '''<div class="phone" aria-hidden="true"><div class="phone__screen">
+  <div class="phone__top"></div>
+  <span class="phone__row"><em></em><i></i></span>
+  <span class="phone__row"><em></em><i></i></span>
+  <span class="phone__row"><em></em><i></i></span>
+  <b class="phone__btn"></b>
+</div></div>'''
+
+# "Layanan Kami" cards: (icon, title, text, link, link label). The facts come from the old site:
+# the implementor job description, the ARB+ infrastructure text, and the training posts.
+SERVICES = [
+    ('db', 'Implementasi & migrasi data', 'Tim kami menyiapkan dan memigrasikan data BPR ke ARB+.',
+     'category/implementasi/', 'Lihat implementasi'),
+    ('learn', 'Pelatihan pengguna', 'Pelatihan langsung untuk staf BPR, plus workshop regulasi.',
+     'category/acara-umum/', 'Lihat kegiatan'),
+    ('support', 'Pendampingan', 'Kami menangani kendala klien dari awal sampai akhir masa garansi.',
+     'kontak/', 'Hubungi kami'),
+    ('cloud', 'Cloud & DRC', 'ARB+ berjalan di 3 data center Tier 3 dengan DRC otomatis.',
+     'produk-layanan/coreplus/', 'Pelajari ARB+'),
+]
+
+# Mission text is verbatim from the company. Only the short titles are new.
+MISSIONS = [
+    ('growth', 'Selalu berkembang', 'Terus berkembang untuk memenuhi seluruh kebutuhan client.'),
+    ('shield', 'Dukungan optimal, biaya ekonomis',
+     'Memberikan dukungan Core Banking System yang optimal dengan biaya yang ekonomis.'),
+    ('users', 'Tumbuh bersama', 'Menjalin Sinergi untuk kemajuan bersama.'),
+]
+
+HOME_JS = '''<script>
+  // Hero slider: next slide every 6 s. Hover, focus, touch, the pause button, and reduced motion stop it.
+  (() => {
+    const hero = document.querySelector('.hero');
+    const track = hero.querySelector('.hero__track');
+    const slides = [...track.children];
+    const dots = [...hero.querySelectorAll('.hero__dots button')];
+    const pause = hero.querySelector('.hero__pause');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let i = 0, timer = 0, paused = reduce, hold = false;
+    const go = n => {
+      i = (n + slides.length) % slides.length;
+      track.scrollTo({ left: i * track.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
+    };
+    const start = () => {
+      clearInterval(timer);
+      if (!paused && !hold) timer = setInterval(() => go(i + 1), 6000);
+    };
+    const setPaused = v => {
+      paused = v;
+      pause.setAttribute('aria-pressed', v);
+      pause.setAttribute('aria-label', v ? 'Putar slider' : 'Jeda slider');
+      start();
+    };
+    // Keep the dots in sync with swipes as well as with button clicks.
+    const io = new IntersectionObserver(list => list.forEach(en => {
+      if (!en.isIntersecting) return;
+      i = slides.indexOf(en.target);
+      dots.forEach((d, k) => d.setAttribute('aria-current', k === i));
+    }), { root: track, threshold: 0.6 });
+    slides.forEach(s => io.observe(s));
+    dots.forEach((d, k) => d.addEventListener('click', () => { go(k); start(); }));
+    hero.querySelector('.hero__arrow--prev').addEventListener('click', () => { go(i - 1); start(); });
+    hero.querySelector('.hero__arrow--next').addEventListener('click', () => { go(i + 1); start(); });
+    pause.addEventListener('click', () => setPaused(!paused));
+    const holdOn = () => { hold = true; start(); };
+    const holdOff = () => { hold = false; start(); };
+    hero.addEventListener('mouseenter', holdOn);
+    hero.addEventListener('mouseleave', holdOff);
+    hero.addEventListener('focusin', holdOn);
+    hero.addEventListener('focusout', holdOff);
+    track.addEventListener('touchstart', () => setPaused(true), { passive: true });
+    setPaused(paused);
+  })();
+
+  // Carousel arrows (desktop). Phones swipe.
+  document.querySelectorAll('.rail-wrap').forEach(w => {
+    const rail = w.querySelector('.rail');
+    w.querySelectorAll('.rail-btn').forEach(b => b.addEventListener('click', () => {
+      const dir = b.classList.contains('rail-btn--prev') ? -1 : 1;
+      rail.scrollBy({ left: dir * rail.clientWidth * 0.9, behavior: 'smooth' });
+    }));
+  });
+
+  // News tabs
+  const tabs = [...document.querySelectorAll('[role=tab]')];
+  tabs.forEach(t => t.addEventListener('click', () => tabs.forEach(o => {
+    const on = o === t;
+    o.setAttribute('aria-selected', on);
+    document.getElementById(o.getAttribute('aria-controls')).hidden = !on;
+  })));
+</script>'''
+
+
+def hero_slider():
+    """Banner slider: ARB+, the company vision, and the newest client-facing news post."""
+    news = next(p for p in POSTS if p['category'] in ('Implementasi', 'Acara Umum'))
+    slides = [
+        ('slide--product', '', '''
+      <div class="slide__text">
+        <p class="slide__kicker">ARB+ Core Banking System</p>
+        <h1>Core Banking System terdepan untuk BPR di Indonesia</h1>
+        <p>ARB+ berbasis web, sesuai POJK, dan berjalan di cloud dengan data center Tier 3.</p>
+        <div class="slide__actions">
+          <a href="/kontak/" class="btn btn--light">Jadwalkan Demo</a>
+          <a href="/produk-layanan/" class="btn btn--outline-light">Lihat Produk</a>
         </div>
       </div>
-    </div>
+      <div class="slide__visual">%s</div>''' % MOCKUP_LAPTOP),
+        ('slide--photo', '/assets/foto-tim-hut-17.jpg', '''
+      <div class="slide__text">
+        <p class="slide__kicker">Visi kami</p>
+        <h2>Menjadi Penyedia Solusi Core Banking System yang handal dan terpercaya</h2>
+        <p>Sejak 2009, kami mendampingi BPR di seluruh Indonesia.</p>
+        <div class="slide__actions"><a href="/tentang-kami/" class="btn btn--light">Tentang Kami</a></div>
+      </div>'''),
+        ('slide--photo slide--news', news['image'], '''
+      <div class="slide__text">
+        <p class="slide__kicker">Berita terbaru · %s</p>
+        <h2>%s</h2>
+        <p>%s</p>
+        <div class="slide__actions"><a href="/%s/" class="btn btn--light">Baca Selengkapnya</a></div>
+      </div>''' % (e(news['category']), e(news['title']), tanggal(news['date']), news['path'])),
+    ]
+    out = []
+    for n, (cls, bg, inner) in enumerate(slides, 1):
+        img = '<img src="%s" alt="" class="slide__bg" loading="lazy">' % e(bg) if bg else ''
+        out.append('<div class="slide %s" role="group" aria-roledescription="slide" aria-label="%d dari %d">'
+                   '%s<div class="container slide__grid">%s\n    </div></div>' % (cls, n, len(slides), img, inner))
+    dots = ''.join('<button type="button" aria-label="Slide %d"%s></button>' % (
+        n, ' aria-current="true"' if n == 1 else '') for n in range(1, len(slides) + 1))
+    return '''
+<section class="hero" aria-roledescription="carousel" aria-label="Sorotan Sinergi">
+  <div class="hero__track">%s</div>
+  <button class="hero__arrow hero__arrow--prev" type="button" aria-label="Slide sebelumnya"></button>
+  <button class="hero__arrow hero__arrow--next" type="button" aria-label="Slide berikutnya"></button>
+  <div class="hero__controls">
+    <div class="hero__dots">%s</div>
+    <button class="hero__pause" type="button" aria-pressed="false" aria-label="Jeda slider"></button>
   </div>
-  <div class="container hero__stats">{stats}</div>
-</section>
+</section>''' % (''.join(out), dots)
 
-<section class="vision">
-  <div class="container">
-    <p class="eyebrow">Visi Kami</p>
-    <blockquote>Menjadi Penyedia Solusi Core Banking System yang handal dan terpercaya.</blockquote>
-  </div>
-</section>
 
+def rail_carousel(cards, label):
+    return '''<div class="rail-wrap">
+      <button class="rail-btn rail-btn--prev" type="button" aria-label="Geser ke kiri"></button>
+      <div class="rail rail--carousel" role="region" aria-label="%s" tabindex="0">%s</div>
+      <button class="rail-btn rail-btn--next" type="button" aria-label="Geser ke kanan"></button>
+    </div>''' % (e(label), cards)
+
+
+def build_home():
+    services = ''.join('''
+      <a href="/%s" class="scard">
+        <span class="scard__icon scard__icon--%d">%s</span>
+        <h3>%s</h3>
+        <p>%s</p>
+        <span class="scard__more">%s →</span>
+      </a>''' % (href, n, icon(ic, 'ico'), e(title), e(txt), e(more))
+        for n, (ic, title, txt, href, more) in enumerate(SERVICES, 1))
+    featured = [(FLAGSHIP, '<div class="pcard__laptop">%s</div>' % MOCKUP_LAPTOP),
+                (PRODUCT['m-collection'], PHONE_COLLECTION),
+                (PRODUCT['m-approval'], PHONE_APPROVAL)]
+    pcards = ''.join('''
+      <a href="/produk-layanan/%s/" class="pcard">
+        <div class="pcard__visual">%s</div>
+        <div class="pcard__body">
+          <h3><img src="/assets/%s" alt="%s" class="pcard__logo" loading="lazy"></h3>
+          <p>%s</p>
+          <span class="btn btn--ghost btn--sm">Selengkapnya</span>
+        </div>
+      </a>''' % (p['slug'], visual, p['logo'], e(p['name']), e(p['card'])) for p, visual in featured)
+    missions = ''.join('''
+        <div class="mcard"><span class="mcard__icon">%s</span><div><h3>%s</h3><p>%s</p></div></div>''' % (
+        icon(ic, 'ico'), e(title), e(txt)) for ic, title, txt in MISSIONS)
+    islands = ''.join('<li><span>%s</span><b>%d</b></li>' % (e(k), len(v)) for k, v in BY_ISLAND.items())
+    dcards = ''.join('''
+      <a href="/produk-layanan/%s/" class="dcard"><h3>%s</h3><p>%s</p><span class="dcard__more">Selengkapnya →</span></a>''' % (
+        p['slug'], e(p['name']), e(p['card']))
+        for p in (PRODUCT[s] for s in ('aplikasi-pelaporan-tks', 'e-kyc', 'virtual-account', 'sms-notification')))
+    tab_sets = [('Semua', POSTS)] + [(n, [p for p in POSTS if p['category'] == n])
+                                     for n in ('Acara Umum', 'Acara Internal', 'Press')]
+    tabs = ''.join('<button type="button" role="tab" id="tab-%d" aria-controls="panel-%d" aria-selected="%s">%s</button>' % (
+        n, n, 'true' if n == 0 else 'false', e(name)) for n, (name, _) in enumerate(tab_sets))
+    panels = ''.join('<div class="rail rail--grid cols-4" role="tabpanel" id="panel-%d" aria-labelledby="tab-%d"%s>%s</div>' % (
+        n, n, '' if n == 0 else ' hidden', ''.join(post_card(p) for p in posts[:4])) for n, (_, posts) in enumerate(tab_sets))
+
+    body = hero_slider() + '''
 <section class="section">
   <div class="container">
-    <p class="eyebrow">Misi Kami</p>
-    <h2>Tiga komitmen kami untuk BPR</h2>
-    <div class="pillars">
-      <article class="pillar">
-        <img src="/assets/foto-workshop.jpg" alt="Workshop From Compliance to Cyber Resilience bersama BPR klien" class="pillar__img" loading="lazy">
-        <span class="pillar__no">01</span>
-        <h3>Selalu berkembang</h3>
-        <p>Terus berkembang untuk memenuhi seluruh kebutuhan client.</p>
-        <ul class="proof">
-          <li>Sesuai ketentuan POJK</li>
-          <li><a href="/cbs-core-siap-untuk-penerapan-sak-ep/">Siap untuk penerapan SAK EP</a></li>
-          <li><a href="/pt-sinergi-prakarsa-utama-sukses-melakukan-penetration-test-untuk-meningkatkan-keamanan-sistem/">Lulus penetration test keamanan sistem</a></li>
-        </ul>
-      </article>
-      <article class="pillar">
-        <img src="/assets/foto-implementasi.jpg" alt="Tim Sinergi saat implementasi ARB+ di PT BPR Artatama Sejahtera" class="pillar__img" loading="lazy">
-        <span class="pillar__no">02</span>
-        <h3>Dukungan optimal, biaya ekonomis</h3>
-        <p>Memberikan dukungan Core Banking System yang optimal dengan biaya yang ekonomis.</p>
-        <ul class="proof">
-          <li>Cloud di 3 data center Tier 3</li>
-          <li>Server DRC mengambil alih otomatis bila DC bermasalah</li>
-          <li>Tim dengan rata-rata pengalaman di atas 10 tahun</li>
-        </ul>
-      </article>
-      <article class="pillar">
-        <img src="/assets/foto-gathering-klien.jpg" alt="Pelatihan PDP dan Gathering Client Sinergi 2024" class="pillar__img" loading="lazy">
-        <span class="pillar__no">03</span>
-        <h3>Tumbuh bersama</h3>
-        <p>Menjalin Sinergi untuk kemajuan bersama.</p>
-        <ul class="proof">
-          <li>Diakui dan direkomendasikan oleh OJK</li>
-          <li><a href="/category/acara-umum/">Pelatihan dan gathering rutin bersama klien</a></li>
-          <li>Terhubung dengan 9 mitra: bank, payment gateway, e-KYC, dan infrastruktur</li>
-        </ul>
-      </article>
+    <div class="sec-head">
+      <h2>Layanan Kami</h2>
+      <p>Dukungan lengkap, dari implementasi sampai operasional harian BPR.</p>
+    </div>
+    <div class="rail rail--grid cols-4">%(services)s
     </div>
   </div>
 </section>
 
-<section id="produk" class="section section--tint">
+<section class="section section--tint" id="produk">
   <div class="container">
-    <p class="eyebrow">Produk &amp; Layanan</p>
-    <h2>Pilihan terbaik untuk perbankan di Indonesia</h2>
-    {flagship}
-    <h3 class="subhead">Produk pendukung</h3>
-    {cards}
-  </div>
-</section>
-
-<section id="klien" class="section">
-  <div class="container klien">
-    <div>
-      <p class="eyebrow">Klien Kami</p>
-      <h2>Menjangkau BPR di hampir seluruh Indonesia</h2>
-      <p class="muted">Salah satu dari tiga vendor aplikasi BPR konvensional dengan pengguna terbanyak di Indonesia. Diakui dan direkomendasikan oleh OJK.</p>
-      <img src="/assets/peta-indonesia.png" alt="Peta sebaran klien Sinergi di Indonesia" width="1620" height="616" class="klien__map" loading="lazy">
+    <div class="sec-head">
+      <h2>Solusi untuk setiap kebutuhan BPR</h2>
+      <p>Dari kantor sampai lapangan, semua terhubung dengan ARB+.</p>
     </div>
-    <div class="regions">
-      {regions}
-      <a href="/klien-kami/" class="link">Lihat daftar klien →</a>
+    <div class="rail rail--grid cols-3">%(pcards)s
     </div>
   </div>
 </section>
 
-<section class="section section--tint section--tight">
+<section class="section showcase">
   <div class="container">
-    <h2 class="subhead center">Mitra kami</h2>
-    {partners}
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <div class="section__head">
+    <div class="sec-head sec-head--split">
       <div>
-        <p class="eyebrow">Berita &amp; Acara</p>
-        <h2>Kabar terbaru dari Sinergi</h2>
+        <h2>Operasional BPR lebih mudah dengan ARB+</h2>
+        <p>Satu sistem untuk data nasabah, transaksi, dan pelaporan.</p>
       </div>
-      <a href="/berita-acara/" class="link">Semua berita →</a>
+      <a href="/produk-layanan/coreplus/" class="btn btn--primary">Pelajari ARB+</a>
     </div>
-    <div class="news news--scroll news--4">{news}</div>
+    <div class="showcase__grid">
+      <div class="showcase__visual">
+        %(mockup)s
+        <span class="badge badge--a">Sesuai POJK</span>
+        <span class="badge badge--b">Data center Tier 3</span>
+      </div>
+      <div class="showcase__list">
+        <div class="fcard fcard--on"><h3>Berjalan di cloud</h3><p>3 data center Tier 3. Server DRC mengambil alih otomatis bila DC bermasalah.</p></div>
+        <div class="fcard"><h3>Fitur operasional lengkap</h3><p>Data nasabah (Single CIF), tabungan, deposito, pinjaman, teller, dan General Ledger.</p></div>
+        <div class="fcard"><h3>Siap untuk regulasi</h3><p>Laporan APOLO, OBOX, SLIK, dan tingkat kesehatan bank. <a href="/cbs-core-siap-untuk-penerapan-sak-ep/">Siap SAK EP</a>.</p></div>
+      </div>
+    </div>
   </div>
-</section>'''.format(stats=stats(STATS), flagship=FLAGSHIP_CARD, cards=product_cards(SUPPORT, 'h4'),
-                     regions=regions_summary(), partners=PARTNERS,
-                     news=''.join(post_card(p) for p in POSTS[:4]))
+</section>
+
+<section class="section section--flush-top">
+  <div class="container">
+    <div class="sec-head sec-head--split">
+      <div>
+        <h2>Implementasi terbaru</h2>
+        <p>Kabar implementasi sistem Sinergi di BPR klien.</p>
+      </div>
+      <a href="/category/implementasi/" class="btn btn--primary">Lihat Semua</a>
+    </div>
+    %(impl)s
+  </div>
+</section>
+
+<section class="band band--navy">
+  <div class="container">
+    <div class="sec-head sec-head--light">
+      <p class="sec-head__kicker">Visi kami</p>
+      <h2>Menjadi Penyedia Solusi Core Banking System yang handal dan terpercaya</h2>
+      <p>Tiga misi yang kami jalankan untuk BPR di seluruh Indonesia.</p>
+    </div>
+    <div class="mission">
+      <div class="mission__list">%(missions)s
+        <a href="/tentang-kami/" class="btn btn--accent">Tentang Kami</a>
+      </div>
+      <figure class="mission__photo"><img src="/assets/foto-gathering-klien.jpg" alt="Pelatihan PDP dan Gathering Client Sinergi 2024" loading="lazy"></figure>
+    </div>
+  </div>
+</section>
+
+<section class="band band--mint">
+  <div class="container">
+    <div class="sec-head">
+      <h2>Dipercaya BPR di seluruh Indonesia</h2>
+      <p>Salah satu dari tiga vendor aplikasi BPR konvensional dengan pengguna terbanyak. Diakui dan direkomendasikan oleh OJK.</p>
+    </div>
+    <div class="reach">
+      <div class="reach__text">
+        <h3 class="caps">Dari Sumatera sampai Maluku</h3>
+        <ul class="reach__stats">
+          <li><strong>105</strong><span>BPR klien</span></li>
+          <li><strong>8,1%%</strong><span>pangsa pasar</span></li>
+          <li><strong>17</strong><span>tahun pengalaman</span></li>
+        </ul>
+        <a href="/klien-kami/" class="btn btn--ghost">Lihat Daftar Klien</a>
+      </div>
+      <div class="reach__card">
+        <img src="/assets/peta-indonesia.png" alt="Peta sebaran klien Sinergi di Indonesia" width="1620" height="616" class="reach__map" loading="lazy">
+        <ul class="reach__islands">%(islands)s</ul>
+      </div>
+    </div>
+    <h2 class="row-title">Lengkapi dengan produk pendukung</h2>
+    <div class="rail rail--grid cols-4">%(dcards)s
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="sec-head">
+      <h2>Mitra &amp; integrasi</h2>
+      <p>Terhubung dengan bank, payment gateway, e-KYC, dan penyedia infrastruktur.</p>
+    </div>
+    <div class="panel">%(partners)s</div>
+  </div>
+</section>
+
+<section class="section section--flush-top">
+  <div class="container">
+    <div class="sec-head">
+      <h2>Berita &amp; Acara</h2>
+      <p>Ikuti kegiatan dan kabar terbaru dari Sinergi.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Kategori berita">%(tabs)s</div>
+    <div class="news-box">%(panels)s</div>
+    <p class="center"><a href="/berita-acara/" class="link">Lihat semua berita →</a></p>
+  </div>
+</section>''' % dict(services=services, pcards=pcards, mockup=MOCKUP_LAPTOP,
+                     impl=rail_carousel(''.join(post_card(p) for p in POSTS if p['category'] == 'Implementasi'),
+                                        'Implementasi terbaru'),
+                     missions=missions, islands=islands, dcards=dcards, partners=PARTNERS, tabs=tabs, panels=panels)
     page('', 'Sinergi — Core Banking System untuk BPR di Indonesia',
          'PT Sinergi Prakarsa Utama menyediakan Core Banking System ARB+ berbasis web dan cloud untuk BPR. Dipakai 105 BPR di seluruh Indonesia sejak 2009.',
-         body)
+         body, js=HOME_JS)
 
 
 def build_products():
@@ -591,7 +834,7 @@ def build_about():
       <h3>Legalitas</h3>
       <p>Sinergi berdiri pada 14 Agustus 2009 berdasarkan Akta Nomor 14 dari Notaris Elizabeth Arlita Suryoko, SH, di Tangerang. Pendirian disahkan oleh Keputusan Menteri Hukum dan HAM RI Nomor AHU-39511.AH.01.01 Tahun 2009, tanggal 14 Agustus 2009.</p>
     </div>
-    <div class="vm">
+    <div class="vm" id="visi-misi">
       <div class="vm__card vm__card--dark">
         <p class="eyebrow">Visi</p>
         <p class="vm__vision">Menjadi Penyedia Solusi Core Banking System yang handal dan terpercaya.</p>
@@ -606,14 +849,14 @@ def build_about():
       </div>
     </div>
   </div>
-  <div class="container org">
+  <div class="container org" id="struktur">
     <h2>Struktur organisasi</h2>
     <a href="/assets/struktur-organisasi.png"><img src="/assets/struktur-organisasi.png" alt="Bagan struktur organisasi PT Sinergi Prakarsa Utama" width="1920" height="1080" loading="lazy"></a>
     <p class="muted">Per Desember 2024. Ketuk gambar untuk melihat ukuran penuh.</p>
   </div>
 </section>
 
-<section class="section section--tint section--tight">
+<section class="section section--tint section--tight" id="mitra">
   <div class="container">
     <h2 class="subhead center">Mitra kami</h2>
     %s
@@ -701,7 +944,7 @@ def build_news():
 <section class="section section--tint">
   <div class="container">
     <h2 class="subhead">Berita lainnya</h2>
-    <div class="news news--scroll">{related}</div>
+    <div class="rail rail--grid cols-3">{related}</div>
   </div>
 </section>'''.format(cat=e(p['category']), title=e(p['title']), date=p['date'], when=tanggal(p['date']),
                      cover=cover, content=render_blocks(p['blocks'], p['title']),
@@ -784,13 +1027,13 @@ def build_contact():
   });
 </script>'''
     page('kontak/', 'Kontak', 'Alamat, telepon, email, dan WhatsApp PT Sinergi Prakarsa Utama di Tangerang dan Surabaya.',
-         body, section='kontak/', cta=False, js=js)
+         body, section='kontak/', js=js)
 
 
 def build_404():
     body = page_hero('404', 'Halaman tidak ditemukan', 'Halaman yang Anda cari tidak ada atau sudah dipindahkan.',
                      '<div class="hero__actions"><a href="/" class="btn btn--primary">Ke Beranda</a><a href="/berita-acara/" class="btn btn--ghost">Lihat Berita</a></div>')
-    page('404.html', 'Halaman tidak ditemukan', 'Halaman tidak ditemukan.', body, cta=False, in_sitemap=False)
+    page('404.html', 'Halaman tidak ditemukan', 'Halaman tidak ditemukan.', body, in_sitemap=False)
 
 
 def build_sitemap():
