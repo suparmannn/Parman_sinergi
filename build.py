@@ -30,6 +30,7 @@ ICONS = {
     'chat': '<path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-6.4A8 8 0 1 1 21 12Z"/>',
     'pin': '<path d="M12 22s-7-6.3-7-12a7 7 0 0 1 14 0c0 5.7-7 12-7 12Z"/><circle cx="12" cy="10" r="2.5"/>',
     'mail': '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/>',
+    'shield': '<path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
     'tel': '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>',
 }
 
@@ -132,6 +133,70 @@ PRODUCTS = [
 ]
 FLAGSHIP, SUPPORT = PRODUCTS[0], PRODUCTS[1:]
 PRODUCT = {p['slug']: p for p in PRODUCTS}
+
+# Device frame per product: phones for the Android apps and notifications, laptop or tablet for web products.
+DEVICE = {'coreplus': 'laptop', 'aplikasi-pelaporan-tks': 'tablet', 'e-kyc': 'tablet', 'virtual-account': 'tablet',
+          'm-collection': 'phone', 'm-approval': 'phone', 'sms-notification': 'phone'}
+
+
+def device(p):
+    """CSS device frame for a product. Put a real screenshot at static/assets/ui/<slug>.png (or .jpg) and the
+    build shows it in the frame. Until then the screen shows the product logo on a placeholder."""
+    kind = DEVICE[p['slug']]
+    shot = next((f for f in ('%s.png' % p['slug'], '%s.jpg' % p['slug']) if (ROOT / 'static/assets/ui' / f).exists()), None)
+    screen = ('<img src="/assets/ui/%s" alt="">' % shot if shot else
+              '<span class="screen-ph"><img src="/assets/%s" alt=""><i></i><i></i><i></i></span>' % p['logo'])
+    base = '<span class="device__base"></span>' if kind == 'laptop' else ''
+    return '<span class="device device--%s" aria-hidden="true"><span class="device__screen">%s</span>%s</span>' % (kind, screen, base)
+
+
+def product_cards(products, wide_first=True):
+    """Colored product cards, each with its device frame. Tones cycle navy, light, blue."""
+    out = []
+    for n, p in enumerate(products):
+        out.append('<a href="/produk-layanan/%s/" class="pc pc--%s%s"><span class="pc__visual">%s</span>'
+                   '<span class="pc__body"><span class="pc__logo"><img src="/assets/%s" alt="" loading="lazy"></span>'
+                   '<h3>%s</h3><span class="pc__text">%s</span><span class="pc__more">Pelajari</span></span></a>' % (
+                       p['slug'], ('navy', 'sky', 'blue')[n % 3], ' pc--wide' if wide_first and n == 0 else '', device(p),
+                       p['logo'], e('ARB+ Core Banking System' if p is FLAGSHIP else p['name']), e(p['card'])))
+    return '<div class="cards">%s</div>' % ''.join(out)
+
+
+# Client logos from the old site's "Mitra Kami" carousel, in their original colors.
+CLIENT_LOGOS = [
+    ('Picture1.jpg', 'BPR Bhakti Daya Ekonomi'), ('Picture2.jpg', 'BPR Bringin Dana Sejahtera'),
+    ('Picture3.jpg', 'BPR LSE Manggala'), ('Picture4.png', 'BPR Hayura Artalola'),
+    ('Picture6.png', 'BPR Akasia Mas'), ('Picture7.png', 'BPR Sukabumi'),
+    ('Picture8.png', 'BPR Pancaputra Ganda Grup'), ('Picture10.jpg', 'BPR Karya Perdana Sejahtera'),
+    ('Picture11.png', 'BPR Rifi Maligi'), ('Picture12.png', 'BPR Sulawesi Mandiri'),
+    ('Picture14.png', 'BPR Sentral Investasi Prima'), ('Picture15.png', 'BPR Kepri Bintan'),
+    ('Picture17.jpg', 'BPR Danamas Simpan Pinjam'), ('Picture18.png', 'BPR Karya Guna Mandiri'),
+    ('Picture19.png', 'BPR Mitra Lestari'), ('Picture21.png', 'BPR Marcorindo Perdana'),
+    ('Picture22.png', 'BPR Lima Padma Mandiri'), ('Picture23.png', 'BPR Lokadana Sentosa'),
+    ('Picture24.jpg', 'BPR Tri Gunung Selatan'), ('Picture28.png', 'BPR Danatama Indonesia'),
+    ('Picture29.png', 'BPR Citra Dumoga'), ('Picture30.png', 'BPR Rudo Indobank'),
+    ('Picture31.png', 'BPR klien Sinergi'), ('Picture32.jpg', 'BAS Bank'),
+    ('Picture33.png', 'BPR Batanghari'), ('Picture35.png', 'BPR Harapan Bunda Batam'),
+    ('Picture36.png', 'BPR Dana Selaras Sentosa'), ('Picture38.png', 'BPR Dana Nagoya'),
+    ('Picture39.png', 'BPR Primadana Abadi'), ('Picture40.png', 'BPR Pancur Banua Khatulistiwa'),
+    ('Picture41.png', 'BPR Lebak Sejahtera'), ('Picture42.png', 'BPR Artha Prima Persada'),
+    ('Picture43.png', 'BPR Dana Utama'), ('Picture44.png', 'BPR Bina Dana Swadaya'),
+]
+
+
+def logo_marquee():
+    """Client logos scroll in a loop. The second copy only closes the loop, so screen readers skip it."""
+    first = ''.join('<li><img src="/assets/klien/%s" alt="%s"></li>' % (f, e(a)) for f, a in CLIENT_LOGOS)
+    copy = ''.join('<li><img src="/assets/klien/%s" alt=""></li>' % f for f, _ in CLIENT_LOGOS)
+    return ('<div class="marquee"><ul class="marquee__track">%s</ul>'
+            '<ul class="marquee__track" aria-hidden="true">%s</ul></div>' % (first, copy))
+
+
+def story(p, big=False):
+    return ('<a href="/%s/" class="story%s"><img src="%s" alt="" loading="lazy"><span class="story__body">'
+            '<span class="tag">%s</span><h3>%s</h3><time datetime="%s">%s</time></span></a>') % (
+        p['path'], ' story--big' if big else '', e(p['image']), e(p['category']), e(p['title']), p['date'],
+        tanggal(p['date']))
 
 # Mission text is verbatim from the company. Only the short titles are new.
 MISSIONS = [
@@ -236,7 +301,7 @@ SITE_JS = '''<script>
     t.setAttribute('aria-expanded', open);
   }));
   // Scroll reveal: blocks rise in the first time they enter the screen. Keep this list in sync with styles.css.
-  const reveal = '.tile, .item, .news__item, .sec__head, .page-hero__inner, .contact__item';
+  const reveal = '.tile, .pc, .story, .doc, .news__item, .sec__head, .page-hero__inner, .contact__item, .missions li';
   const io = new IntersectionObserver(list => list.forEach(en => {
     if (!en.isIntersecting) return;
     en.target.classList.add('in');
@@ -331,14 +396,14 @@ def page(path, title, desc, body, section='', image='', js='', in_sitemap=True):
   <script>document.documentElement.classList.add('js');</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <a class="skip" href="#konten">Lewati ke konten</a>
   <header class="header">
     <div class="container header__bar">
-      <a href="/" class="header__logo"><img src="/assets/logo.png" alt="Sinergi" width="432" height="168"></a>
+      <a href="/" class="header__logo"><img src="/assets/logo-white.png" alt="Sinergi" width="432" height="168"></a>
       <nav id="nav" class="nav" aria-label="Menu utama">
         {nav}
         <a href="/kontak/" class="btn btn--primary nav__cta">Hubungi Kami</a>
@@ -382,26 +447,6 @@ def stat_tiles(items, cls):
     return '<div class="%s">%s</div>' % (cls, ''.join(
         '<div class="tile tile--stat%s"><span class="tile__label">%s</span><div><div class="num">%s</div><p>%s</p></div></div>' % (
             ' tile--blue' if n == 0 else '', e(label), e(num), e(txt)) for n, (label, num, txt) in enumerate(items)))
-
-
-def product_items(products):
-    return ''.join(
-        '<a href="/produk-layanan/%s/" class="item"><span class="item__logo"><img src="/assets/%s" alt="" loading="lazy"></span>'
-        '<span class="item__name">%s</span></a>' % (p['slug'], p['logo'], e(p.get('short', p['name']))) for p in products)
-
-
-def product_bento():
-    """ARB+ as the large tile, the six supporting products as small tiles."""
-    return '''<div class="prod">
-      <a href="/produk-layanan/coreplus/" class="tile prod__main">
-        <img src="/assets/logo-arb.png" alt="ARB+" width="1400" height="617" class="prod__logo">
-        <h3>Core Banking System</h3>
-        <p>Data nasabah, tabungan, deposito, pinjaman, teller, dan General Ledger dalam satu sistem berbasis web.</p>
-        <ul class="pills"><li>Sesuai POJK</li><li>3 data center Tier 3</li><li>DRC otomatis</li><li>Siap SAK EP</li></ul>
-        <span class="link">Pelajari ARB+</span>
-      </a>
-      <div class="prod__grid">%s</div>
-    </div>''' % product_items(SUPPORT)
 
 
 PARTNERS = '''<ul class="partners">
@@ -462,118 +507,101 @@ def render_blocks(blocks, title):
 def build_home():
     missions = ''.join('<li><b>0%d</b><div><h3>%s</h3><p>%s</p></div></li>' % (n, e(t), e(x))
                        for n, (t, x) in enumerate(MISSIONS, 1))
-    islands = ''.join('<li>%s <b>%d</b></li>' % (e(k), len(v)) for k, v in BY_ISLAND.items())
+    docs = ''.join('<a href="/%s/" class="doc"><img src="%s" alt="%s" loading="lazy"><span>%s</span></a>' % (
+        p['path'], e(p['image']), e(p['title']), e(p['title'])) for p in POSTS[3:9])
     body = '''
 <section class="hero">
   <div class="container hero__grid">
     <div class="hero__text">
+      <span class="tag-pill">ARB+ Core Banking System</span>
       <h1>Core Banking System <span class="hl">terdepan</span> untuk BPR di Indonesia</h1>
       <p class="lede">Berbasis web, sesuai POJK, dan berjalan di cloud dengan data center Tier 3.</p>
-      <div class="cta"><a href="/kontak/" class="btn btn--primary">Jadwalkan Demo</a><a href="/produk-layanan/" class="link">Lihat produk</a></div>
+      <div class="cta"><a href="/produk-layanan/" class="btn btn--light">Lihat Produk</a><a href="/kontak/" class="btn btn--outline-light">Hubungi Kami</a></div>
+      <ul class="trust"><li><strong>105</strong><span>BPR klien</span></li><li><strong>17</strong><span>tahun</span></li><li><strong>8,1%%</strong><span>pangsa pasar</span></li></ul>
     </div>
-    <div class="bento">
-      <figure class="tile tile--photo">%(photo)s<figcaption>17 tahun mendampingi BPR</figcaption></figure>
-      <div class="tile tile--stat tile--blue"><span class="tile__label">Klien</span><div><div class="num">105</div><p>BPR di seluruh Indonesia</p></div></div>
-      <div class="tile tile--stat"><span class="tile__label">Pangsa pasar</span><div><div class="num">8,1%%</div><p>dari 1.291 BPR konvensional</p><div class="meter" aria-hidden="true"><i></i></div></div></div>
+    <div class="hero__art">
+      <div class="arch"><img src="/assets/ilustrasi-m-collection.jpg" alt="" width="1024" height="1024" fetchpriority="high"></div>
+      <div class="float"><span class="float__icon">%(shield)s</span><span><b>Diakui &amp; direkomendasikan</b>oleh OJK</span></div>
     </div>
+  </div>
+</section>
+
+<section class="logos">
+  <div class="container"><p class="logos__title">Dipercaya <a href="/klien-kami/">105 BPR</a> di seluruh Indonesia</p></div>
+  %(marquee)s
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="sec__head"><div><h2>Solusi untuk setiap kebutuhan BPR</h2><p>Dari kantor sampai lapangan, semua terhubung dengan ARB+.</p></div><a href="/produk-layanan/" class="link">Semua produk</a></div>
+    %(cards)s
+  </div>
+</section>
+
+<section class="section section--ice vision">
+  <div class="container">
+    <p class="kicker">Visi kami</p>
+    <p class="vision__quote">Menjadi Penyedia Solusi Core Banking System yang <span class="hl">handal dan terpercaya</span>.</p>
+    <ol class="missions">%(missions)s</ol>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <div class="sec__head"><h2>Satu ekosistem untuk operasional BPR</h2><a href="/produk-layanan/" class="link">Semua produk</a></div>
-    %(products)s
+    <div class="sec__head"><div><h2>Kabar &amp; dokumentasi</h2><p>Kegiatan Sinergi bersama tim dan BPR klien.</p></div><a href="/berita-acara/" class="link">Semua berita</a></div>
+    <div class="stories">%(feature)s<div class="stories__side">%(side)s</div></div>
+    <div class="docs">%(docs)s</div>
   </div>
 </section>
 
-<section class="section">
+<section class="section section--ice section--tight">
   <div class="container">
-    <div class="tile tile--navy vm">
-      <div class="vm__lead">
-        <span class="tile__label">Visi kami</span>
-        <p class="vm__quote">Menjadi Penyedia Solusi Core Banking System yang <span class="hl-light">handal dan terpercaya</span>.</p>
-        <a href="/tentang-kami/" class="btn btn--light">Tentang Kami</a>
-      </div>
-      <ol class="vm__missions">%(missions)s</ol>
-    </div>
+    <p class="logos__title">Terhubung dengan</p>
+    %(partners)s
   </div>
 </section>
 
-<section class="section">
-  <div class="container">
-    <div class="tile reach">
-      <div>
-        <h2>Dipercaya <span class="hl">105 BPR</span> dari Sumatera sampai Maluku</h2>
-        <p class="muted">Salah satu dari tiga vendor aplikasi BPR konvensional dengan pengguna terbanyak. Diakui dan direkomendasikan oleh OJK.</p>
-        <a href="/klien-kami/" class="btn btn--primary">Lihat daftar klien</a>
-      </div>
-      <div>
-        <img src="/assets/peta-indonesia.png" alt="Peta sebaran klien Sinergi" width="1620" height="616" class="reach__map" loading="lazy">
-        <ul class="islands">%(islands)s</ul>
-      </div>
-    </div>
+<section class="cta-band">
+  <div class="container cta-band__inner">
+    <h2>Butuh dukungan optimal untuk Core Banking System?</h2>
+    <p>Bicara dengan tim kami tentang solusi Core Banking System web-based yang andal dan efisien.</p>
+    <div class="cta"><a href="/kontak/" class="btn btn--light">Hubungi Kami</a><a href="https://wa.me/%(wa)s" class="btn btn--outline-light">Chat WhatsApp</a></div>
   </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <div class="sec__head"><h2>Kabar terbaru</h2><a href="/berita-acara/" class="link">Semua berita</a></div>
-    <div class="news-grid">%(news)s</div>
-  </div>
-</section>
-
-<section class="section section--last">
-  <div class="container closing">
-    <div class="tile">
-      <span class="tile__label">Mitra &amp; integrasi</span>
-      %(partners)s
-    </div>
-    <div class="tile tile--blue cta-tile">
-      <h2>Butuh dukungan optimal untuk Core Banking System?</h2>
-      <p>Bicara dengan tim kami tentang solusi Core Banking System web-based yang andal dan efisien.</p>
-      <div class="cta"><a href="/kontak/" class="btn btn--light">Jadwalkan Demo</a><a href="https://wa.me/%(wa)s" class="btn btn--outline-light">Chat WhatsApp</a></div>
-    </div>
-  </div>
-</section>''' % dict(photo=TEAM_PHOTO % ('(min-width: 1024px) 30vw, 100vw', ' fetchpriority="high"'),
-                     products=product_bento(), missions=missions, islands=islands,
-                     news=''.join(post_card(p) for p in POSTS[:3]), partners=PARTNERS, wa=WA)
+</section>''' % dict(shield=icon('shield', 'ico'), marquee=logo_marquee(), cards=product_cards(PRODUCTS),
+                     missions=missions, feature=story(POSTS[0], big=True),
+                     side=''.join(story(p) for p in POSTS[1:3]), docs=docs, partners=PARTNERS, wa=WA)
     page('', 'Sinergi — Core Banking System untuk BPR di Indonesia',
          'PT Sinergi Prakarsa Utama menyediakan Core Banking System ARB+ berbasis web dan cloud untuk BPR. Dipakai 105 BPR di seluruh Indonesia sejak 2009.',
          body)
 
 
 def build_products():
-    body = page_hero('Produk &amp; Layanan', 'Satu ekosistem untuk operasional BPR',
+    body = page_hero('Produk &amp; Layanan', 'Solusi untuk setiap kebutuhan BPR',
                      'Satu Core Banking System dan enam produk pendukung untuk operasional BPR.') + '''
 <section class="section section--first section--last">
   <div class="container">%s</div>
-</section>''' % product_bento()
+</section>''' % product_cards(PRODUCTS).replace('class="cards"', 'class="cards cards--all"', 1)
     page('produk-layanan/', 'Produk & Layanan',
          'Core Banking System ARB+ dan produk pendukung untuk BPR: Pelaporan TKS, e-KYC, M-Approval, Virtual Account, M-Collection, dan notifikasi SMS/WhatsApp.',
          body, section='produk-layanan/')
 
     for p in PRODUCTS:
         title = 'ARB+ Core Banking System' if p is FLAGSHIP else p['name']
-        actions = ('<div class="cta"><a href="/kontak/" class="btn btn--primary">Minta Demo</a>'
-                   '<a href="https://wa.me/%s" class="btn btn--ghost">Tanya via WhatsApp</a></div>' % WA)
-        if 'photo' in p:
-            h1 = '<img src="/assets/%s" alt="" class="page-hero__brand">%s' % (p['logo'], e(title))
-            aside = '<figure class="tile tile--photo page-hero__visual"><img src="/assets/%s" alt=""></figure>' % p['photo']
-        else:
-            h1 = e(title)
-            aside = '<div class="tile page-hero__visual page-hero__logo"><img src="/assets/%s" alt=""></div>' % p['logo']
+        actions = ('<div class="cta"><a href="/kontak/" class="btn btn--light">Hubungi Kami</a>'
+                   '<a href="https://wa.me/%s" class="btn btn--outline-light">Tanya via WhatsApp</a></div>' % WA)
+        h1 = '<span class="page-hero__brand"><img src="/assets/%s" alt=""></span>%s' % (p['logo'], e(title))
+        aside = '<div class="page-hero__visual page-hero__visual--%s">%s</div>' % (DEVICE[p['slug']], device(p))
         details = '''
 <section class="section section--first">
   <div class="container"><div class="tile prose prose--wide">%s</div></div>
 </section>''' % p['body'] if p['body'] else ''
-        others = [o for o in PRODUCTS if o is not p]
         body = page_hero('<a href="/produk-layanan/">Produk &amp; Layanan</a>', h1, e(p['summary']), actions, aside) + details + '''
 <section class="section section--last">
   <div class="container">
     <div class="sec__head"><h2>Produk lainnya</h2><a href="/produk-layanan/" class="link">Semua produk</a></div>
-    <div class="prod__grid prod__grid--all">%s</div>
+    %s
   </div>
-</section>''' % product_items(others)
+</section>''' % product_cards([o for o in PRODUCTS if o is not p], wide_first=False)
         page('produk-layanan/%s/' % p['slug'], title, p['summary'], body, section='produk-layanan/')
 
 
@@ -650,6 +678,7 @@ def build_clients():
 <section class="section section--first section--last">
   <div class="container">
     %s
+    <div class="tile"><h2 class="tile__title">Sebagian BPR klien kami</h2><ul class="wall">%s</ul></div>
     <div class="tile clients-map"><img src="/assets/peta-indonesia.png" alt="Peta sebaran klien Sinergi di Indonesia" width="1620" height="616" loading="lazy"></div>
     <div class="search">
       <label for="cari">Cari BPR atau kota</label>
@@ -660,7 +689,9 @@ def build_clients():
   </div>
 </section>''' % (stat_tiles([('BPR konvensional', '1.291', 'di Indonesia per Mei 2026 (OJK)'),
                              ('Klien Sinergi', '105', 'BPR per Juni 2026'),
-                             ('Pangsa pasar', '8,1%', 'dari seluruh BPR konvensional')], 'stats'), ''.join(groups))
+                             ('Pangsa pasar', '8,1%', 'dari seluruh BPR konvensional')], 'stats'),
+       ''.join('<li><img src="/assets/klien/%s" alt="%s" loading="lazy"></li>' % (f, e(a)) for f, a in CLIENT_LOGOS),
+       ''.join(groups))
     js = '''<script>
   const q = document.getElementById('cari');
   q.addEventListener('input', () => {
@@ -685,9 +716,10 @@ def build_news():
 <section class="section section--first section--last">
   <div class="container">
     <nav class="chips" aria-label="Kategori berita">%s</nav>
+    %s
     <div class="news">%s</div>
   </div>
-</section>''' % (nav, ''.join(post_card(p) for p in posts))
+</section>''' % (nav, story(posts[0], big=True) if posts else '', ''.join(post_card(p) for p in posts[1:]))
         page(path, h1, 'Berita, acara, dan kabar implementasi Core Banking System dari Sinergi.', body,
              section='berita-acara/')
 
@@ -806,7 +838,7 @@ def build_contact():
 
 def build_404():
     body = page_hero('404', 'Halaman tidak ditemukan', 'Halaman yang Anda cari tidak ada atau sudah dipindahkan.',
-                     '<div class="cta"><a href="/" class="btn btn--primary">Ke Beranda</a><a href="/berita-acara/" class="btn btn--ghost">Lihat Berita</a></div>')
+                     '<div class="cta"><a href="/" class="btn btn--light">Ke Beranda</a><a href="/berita-acara/" class="btn btn--outline-light">Lihat Berita</a></div>')
     page('404.html', 'Halaman tidak ditemukan', 'Halaman tidak ditemukan.', body, in_sitemap=False)
 
 
