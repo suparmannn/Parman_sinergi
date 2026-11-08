@@ -119,9 +119,6 @@ p { margin: 0 0 16px; }
 /* Dots: a 10px mark inside a 26px tap area. */
 .hero__dots button { width: 10px; height: 10px; padding: 8px; box-sizing: content-box; border: 0; border-radius: 999px; background: rgba(255,255,255,.45) content-box; cursor: pointer; transition: width .3s; }
 .hero__dots button[aria-current="true"] { width: 26px; background-color: var(--white); }
-.hero__pause { position: relative; width: 32px; height: 32px; padding: 0; border: 1px solid rgba(255,255,255,.5); border-radius: 50%; background: transparent; cursor: pointer; }
-.hero__pause::before { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 10px; border: solid var(--white); border-width: 0 3px; transform: translate(-50%, -50%); }
-.hero__pause[aria-pressed="true"]::before { width: 0; height: 0; border-width: 6px 0 6px 10px; border-color: transparent transparent transparent var(--white); transform: translate(-35%, -50%); }
 .hero__arrow { display: none; }
 .hero__arrow::before, .rail-btn::before { content: ""; width: 9px; height: 9px; border: solid var(--white); border-width: 2px 2px 0 0; }
 .hero__arrow--next::before, .rail-btn--next::before { transform: translateX(-2px) rotate(45deg); }

@@ -493,13 +493,13 @@ MISSIONS = [
 ]
 
 HOME_JS = '''<script>
-  // Hero slider: next slide every 6 s. Hover, focus, touch, the pause button, and reduced motion stop it.
+  // Hero slider: next slide every 6 s. Hover, focus, touch, and reduced motion stop it.
+  // shortcut: no pause button (owner's choice), so WCAG 2.2.2 is not fully met. Add one if an accessibility audit asks for it.
   (() => {
     const hero = document.querySelector('.hero');
     const track = hero.querySelector('.hero__track');
     const slides = [...track.children];
     const dots = [...hero.querySelectorAll('.hero__dots button')];
-    const pause = hero.querySelector('.hero__pause');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let i = 0, timer = 0, paused = reduce, hold = false;
     const go = n => {
@@ -509,12 +509,6 @@ HOME_JS = '''<script>
     const start = () => {
       clearInterval(timer);
       if (!paused && !hold) timer = setInterval(() => go(i + 1), 6000);
-    };
-    const setPaused = v => {
-      paused = v;
-      pause.setAttribute('aria-pressed', v);
-      pause.setAttribute('aria-label', v ? 'Putar slider' : 'Jeda slider');
-      start();
     };
     // Keep the dots in sync with swipes as well as with button clicks.
     const io = new IntersectionObserver(list => list.forEach(en => {
@@ -526,15 +520,14 @@ HOME_JS = '''<script>
     dots.forEach((d, k) => d.addEventListener('click', () => { go(k); start(); }));
     hero.querySelector('.hero__arrow--prev').addEventListener('click', () => { go(i - 1); start(); });
     hero.querySelector('.hero__arrow--next').addEventListener('click', () => { go(i + 1); start(); });
-    pause.addEventListener('click', () => setPaused(!paused));
     const holdOn = () => { hold = true; start(); };
     const holdOff = () => { hold = false; start(); };
     hero.addEventListener('mouseenter', holdOn);
     hero.addEventListener('mouseleave', holdOff);
     hero.addEventListener('focusin', holdOn);
     hero.addEventListener('focusout', holdOff);
-    track.addEventListener('touchstart', () => setPaused(true), { passive: true });
-    setPaused(paused);
+    track.addEventListener('touchstart', () => { paused = true; start(); }, { passive: true });
+    start();
   })();
 
   // Carousel arrows (desktop). Phones swipe.
@@ -557,13 +550,23 @@ HOME_JS = '''<script>
 
 
 def hero_slider():
-    """Banner slider: ARB+, the company vision, and the newest client-facing news post."""
+    """Banner slider: the company vision, ARB+, and the newest client-facing news post."""
     news = next(p for p in POSTS if p['category'] in ('Implementasi', 'Acara Umum'))
+    team = ('<img src="/assets/foto-tim-hut-17.jpg" srcset="/assets/foto-tim-hut-17-800.jpg 800w, '
+            '/assets/foto-tim-hut-17.jpg 1600w" sizes="100vw" alt="" class="slide__bg" fetchpriority="high">')
     slides = [
+        # The first slide is the largest paint on load, so its photo loads early and phones get the 800px file.
+        ('slide--photo', team, '''
+      <div class="slide__text">
+        <p class="slide__kicker">Visi kami</p>
+        <h1>Menjadi Penyedia Solusi Core Banking System yang handal dan terpercaya</h1>
+        <p>Sejak 2009, kami mendampingi BPR di seluruh Indonesia.</p>
+        <div class="slide__actions"><a href="/tentang-kami/" class="btn btn--light">Tentang Kami</a></div>
+      </div>'''),
         ('slide--product', '', '''
       <div class="slide__text">
         <p class="slide__kicker">ARB+ Core Banking System</p>
-        <h1>Core Banking System terdepan untuk BPR di Indonesia</h1>
+        <h2>Core Banking System terdepan untuk BPR di Indonesia</h2>
         <p>ARB+ berbasis web, sesuai POJK, dan berjalan di cloud dengan data center Tier 3.</p>
         <div class="slide__actions">
           <a href="/kontak/" class="btn btn--light">Jadwalkan Demo</a>
@@ -571,14 +574,7 @@ def hero_slider():
         </div>
       </div>
       <div class="slide__visual">%s</div>''' % MOCKUP_LAPTOP),
-        ('slide--photo', '/assets/foto-tim-hut-17.jpg', '''
-      <div class="slide__text">
-        <p class="slide__kicker">Visi kami</p>
-        <h2>Menjadi Penyedia Solusi Core Banking System yang handal dan terpercaya</h2>
-        <p>Sejak 2009, kami mendampingi BPR di seluruh Indonesia.</p>
-        <div class="slide__actions"><a href="/tentang-kami/" class="btn btn--light">Tentang Kami</a></div>
-      </div>'''),
-        ('slide--photo slide--news', news['image'], '''
+        ('slide--photo slide--news', '<img src="%s" alt="" class="slide__bg" loading="lazy">' % e(news['image']), '''
       <div class="slide__text">
         <p class="slide__kicker">Berita terbaru · %s</p>
         <h2>%s</h2>
@@ -587,8 +583,7 @@ def hero_slider():
       </div>''' % (e(news['category']), e(news['title']), tanggal(news['date']), news['path'])),
     ]
     out = []
-    for n, (cls, bg, inner) in enumerate(slides, 1):
-        img = '<img src="%s" alt="" class="slide__bg" loading="lazy">' % e(bg) if bg else ''
+    for n, (cls, img, inner) in enumerate(slides, 1):
         out.append('<div class="slide %s" role="group" aria-roledescription="slide" aria-label="%d dari %d">'
                    '%s<div class="container slide__grid">%s\n    </div></div>' % (cls, n, len(slides), img, inner))
     dots = ''.join('<button type="button" aria-label="Slide %d"%s></button>' % (
@@ -600,7 +595,6 @@ def hero_slider():
   <button class="hero__arrow hero__arrow--next" type="button" aria-label="Slide berikutnya"></button>
   <div class="hero__controls">
     <div class="hero__dots">%s</div>
-    <button class="hero__pause" type="button" aria-pressed="false" aria-label="Jeda slider"></button>
   </div>
 </section>''' % (''.join(out), dots)
 
