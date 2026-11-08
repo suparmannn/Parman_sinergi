@@ -420,8 +420,22 @@ def build_home():
         <a href="#produk" class="btn btn--ghost">Lihat Produk</a>
       </div>
     </div>
-    {stats}
+    <div class="mockup" aria-hidden="true">
+      <div class="mockup__bar"><span></span><span></span><span></span><em>ARB+ Core Banking System</em></div>
+      <div class="mockup__body">
+        <div class="mockup__side"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+        <div class="mockup__main">
+          <div class="mockup__tiles"><b></b><b></b><b></b></div>
+          <svg class="mockup__chart" viewBox="0 0 300 90" preserveAspectRatio="none">
+            <path d="M0 70 L40 62 L80 66 L120 48 L160 52 L200 34 L240 38 L300 16 L300 90 L0 90 Z" fill="rgba(0,167,157,.14)"/>
+            <path d="M0 70 L40 62 L80 66 L120 48 L160 52 L200 34 L240 38 L300 16" fill="none" stroke="#00a79d" stroke-width="2.5"/>
+          </svg>
+          <div class="mockup__rows"><i></i><i></i><i></i></div>
+        </div>
+      </div>
+    </div>
   </div>
+  <div class="container hero__stats">{stats}</div>
 </section>
 
 <section class="vision">
