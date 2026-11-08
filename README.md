@@ -31,3 +31,10 @@ Jangan buka file di `dist/` langsung dengan `file://`. Link memakai path absolut
 - Gambar berita masih diambil dari `https://sinergic.co.id/wp-content/uploads/`. Salin folder itu ke hosting baru sebelum WordPress dimatikan.
 - Form kontak membuka aplikasi email pengunjung. Untuk kirim langsung, pasang endpoint form di hosting.
 - Redirect `berita-klien/*` memakai meta refresh. Ganti dengan aturan 301 di server.
+
+## Deploy (Railway)
+
+Railway membaca `Dockerfile`. Tahap 1 menjalankan `build.py`. Tahap 2 menyajikan `dist/` dengan Caddy (`Caddyfile`).
+
+- Set variabel `PORT=8080` di service Railway.
+- `Caddyfile` mengirim header `noindex` supaya domain preview tidak masuk Google. Hapus header itu saat situs pindah ke sinergic.co.id.
