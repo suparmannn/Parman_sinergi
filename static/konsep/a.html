@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Konsep A: Bento Terang | Sinergi</title>
+<link rel="icon" href="/assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>document.documentElement.classList.add('js');</script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Concept A: light bento. Mobile-first. Temporary design exploration. */
+:root {
+  --ink: #0b1f33; --muted: #5a6b7b; --bg: #f2f5f8; --line: #e1e7ed;
+  --navy: #003c71; --blue: #1560ae; --teal: #00a79d; --teal-d: #007a73; --teal-l: #48d1cc;
+  --mint: #def4f1; --sky: #e4eef9; --r: 26px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 400 16px/1.6 Manrope, system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3 { margin: 0; font-family: Sora, sans-serif; font-weight: 600; letter-spacing: -.035em; line-height: 1.08; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+
+.nav { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+.nav__logo { width: 116px; }
+.nav__links, .nav .btn { display: none; }
+.menu { display: grid; gap: 4px; place-content: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.menu i { width: 18px; height: 2px; border-radius: 2px; background: var(--ink); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 50px; padding: 0 24px; border-radius: 999px; font-weight: 700; font-size: .95rem; }
+.btn--dark { background: var(--ink); color: #fff; }
+.btn--dark:hover { background: var(--navy); }
+.arrow { font-weight: 700; color: var(--blue); }
+.arrow::after { content: " →"; }
+
+.hero { padding-block: 12px 40px; }
+.pill { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 5px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: .8rem; font-weight: 700; color: var(--navy); }
+.pill b { padding: 3px 10px; border-radius: 999px; background: var(--mint); color: var(--teal-d); font-size: .72rem; }
+.hero h1 { margin: 18px 0 16px; font-size: 2.6rem; }
+.grad { background: linear-gradient(90deg, var(--blue), var(--teal)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lede { margin: 0 0 26px; max-width: 500px; font-size: 1.06rem; color: var(--muted); }
+.cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+
+.bento { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 36px; }
+.tile { position: relative; overflow: hidden; padding: 20px; border-radius: var(--r); background: #fff; }
+.tile--photo { grid-column: 1 / -1; margin: 0; padding: 0; aspect-ratio: 4 / 3; }
+.tile--photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 62%; }
+.tile--photo figcaption { position: absolute; left: 14px; bottom: 14px; padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,.94); font-size: .8rem; font-weight: 700; }
+.tile--stat { display: flex; flex-direction: column; justify-content: space-between; gap: 22px; }
+.tile__label { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+.tile--teal { background: linear-gradient(155deg, var(--teal-l), var(--teal) 75%); color: #fff; }
+.num { font-family: Sora, sans-serif; font-size: 2.7rem; font-weight: 600; letter-spacing: -.05em; line-height: 1; }
+.tile p { margin: 8px 0 0; font-size: .86rem; line-height: 1.4; color: var(--muted); }
+.tile--teal p { color: rgba(255,255,255,.92); }
+/* Market share bar: the fill is the real 8.1%. */
+.meter { height: 10px; margin-top: 18px; border-radius: 999px; background: var(--sky); }
+.meter i { display: block; width: 8.1%; height: 100%; border-radius: 999px; background: var(--blue); }
+
+.sec { padding-block: 40px; }
+.sec__head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: 24px; }
+.sec__head h2 { max-width: 600px; font-size: 1.95rem; }
+
+.prod { display: grid; gap: 12px; }
+.prod__main { display: flex; flex-direction: column; padding: 26px; background: linear-gradient(165deg, #fff 35%, var(--mint)); }
+.prod__main img { align-self: flex-start; height: 46px; width: auto; }
+.prod__main h3 { margin: 22px 0 10px; font-size: 1.55rem; }
+.prod__main p { margin: 0 0 18px; font-size: .98rem; color: var(--muted); }
+.ticks { list-style: none; margin: 0 0 24px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.ticks li { padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: .8rem; font-weight: 700; color: var(--navy); }
+.prod__main .arrow { margin-top: auto; }
+.prod__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.item { display: flex; flex-direction: column; justify-content: space-between; gap: 18px; min-height: 140px; padding: 18px; border-radius: 22px; background: #fff; transition: transform .2s; }
+.item:hover { transform: translateY(-3px); }
+.item__logo { display: flex; align-items: center; height: 34px; }
+.item__logo img { max-height: 34px; width: auto; object-fit: contain; }
+.item__name { font-size: .88rem; font-weight: 700; }
+.item__name::after { content: " →"; color: var(--blue); }
+
+.reach { display: grid; gap: 28px; padding: 28px; background: #fff; }
+.reach h2 { font-size: 1.95rem; }
+.reach p { margin: 14px 0 22px; color: var(--muted); }
+.reach__map { width: 100%; opacity: .92; }
+.islands { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.islands li { padding: 6px 12px; border-radius: 999px; background: var(--bg); font-size: .8rem; font-weight: 700; }
+.islands b { color: var(--teal-d); }
+
+.label { position: fixed; left: 12px; bottom: 12px; z-index: 9; padding: 8px 14px; border-radius: 999px; background: var(--ink); color: #fff; font-size: .78rem; font-weight: 700; }
+
+/* Scroll reveal: items rise in the first time they enter the screen. Without JS, all items show. */
+.js [data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); transition-delay: calc(var(--i, 0) * 90ms); }
+.js [data-reveal].in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .js [data-reveal] { opacity: 1; transform: none; transition: none; } }
+
+@media (min-width: 768px) {
+  .wrap { padding: 0 32px; }
+  .hero h1 { font-size: 3.4rem; }
+  .bento { grid-template-columns: 1.2fr 1fr; grid-template-rows: 1fr 1fr; height: 460px; }
+  .tile--photo { grid-column: 1; grid-row: 1 / 3; aspect-ratio: auto; }
+  .prod__grid { grid-template-columns: repeat(3, 1fr); }
+  .sec { padding-block: 64px; }
+  .sec__head h2, .reach h2 { font-size: 2.4rem; }
+}
+@media (min-width: 1024px) {
+  .nav { height: 84px; }
+  .nav__links { display: flex; gap: 30px; font-size: .94rem; font-weight: 600; color: #34485c; }
+  .nav .btn { display: inline-flex; height: 44px; padding: 0 20px; }
+  .menu { display: none; }
+  .hero { padding-block: 32px 64px; }
+  .hero__grid { display: grid; grid-template-columns: 1fr 1.08fr; gap: 56px; align-items: center; }
+  .hero h1 { font-size: 4.1rem; }
+  .bento { margin: 0; height: 500px; }
+  .sec { padding-block: 80px; }
+  .sec__head h2 { font-size: 2.8rem; }
+  .prod { grid-template-columns: 1fr 1.45fr; gap: 14px; }
+  .prod__main { padding: 36px; }
+  .prod__grid { gap: 14px; }
+  .reach { grid-template-columns: 1fr 1.25fr; gap: 48px; align-items: center; padding: 48px; }
+  .reach h2 { font-size: 2.8rem; }
+}
+</style>
+</head>
+<body>
+<header class="wrap nav">
+  <img src="/assets/logo.png" alt="Sinergi" class="nav__logo">
+  <nav class="nav__links"><a href="#">Produk</a><a href="#">Tentang Kami</a><a href="#">Klien</a><a href="#">Berita</a><a href="#">Karier</a></nav>
+  <a href="#" class="btn btn--dark">Hubungi Kami</a>
+  <span class="menu" aria-hidden="true"><i></i><i></i><i></i></span>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <div class="hero__grid">
+      <div data-reveal>
+        <span class="pill"><b>ARB+</b> Core Banking System untuk BPR</span>
+        <h1>Core Banking System <span class="grad">terdepan</span> untuk BPR di Indonesia</h1>
+        <p class="lede">Berbasis web, sesuai POJK, dan berjalan di cloud dengan data center Tier 3.</p>
+        <div class="cta"><a href="#" class="btn btn--dark">Jadwalkan Demo</a><a href="#" class="arrow">Lihat produk</a></div>
+      </div>
+      <div class="bento">
+        <figure class="tile tile--photo" data-reveal>
+          <img src="/assets/foto-tim-hut-17-800.jpg" alt="Keluarga besar Sinergi pada perayaan HUT ke-17">
+          <figcaption>17 tahun mendampingi BPR</figcaption>
+        </figure>
+        <div class="tile tile--stat tile--teal" data-reveal><span class="tile__label">Klien</span><div><div class="num">105</div><p>BPR di seluruh Indonesia</p></div></div>
+        <div class="tile tile--stat" data-reveal><span class="tile__label">Pangsa pasar</span><div><div class="num">8,1%</div><p>dari 1.291 BPR konvensional</p><div class="meter"><i></i></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap sec">
+    <div class="sec__head" data-reveal><h2>Satu ekosistem untuk operasional BPR</h2><a href="#" class="arrow">Semua produk</a></div>
+    <div class="prod">
+      <a href="#" class="tile prod__main" data-reveal>
+        <img src="/assets/logo-arb.png" alt="ARB+">
+        <h3>Core Banking System</h3>
+        <p>Data nasabah, tabungan, deposito, pinjaman, teller, dan General Ledger dalam satu sistem berbasis web.</p>
+        <ul class="ticks"><li>Sesuai POJK</li><li>3 data center Tier 3</li><li>DRC otomatis</li><li>Siap SAK EP</li></ul>
+        <span class="arrow">Pelajari ARB+</span>
+      </a>
+      <div class="prod__grid">
+        <a href="#" class="item" data-reveal><span class="item__logo"><img src="/assets/produk-tks.png" alt=""></span><span class="item__name">Pelaporan TKS</span></a>
+        <a href="#" class="item" data-reveal><span class="item__logo"><img src="/assets/produk-e-kyc.png" alt=""></span><span class="item__name">e-KYC</span></a>
+        <a href="#" class="item" data-reveal><span class="item__logo"><img src="/assets/produk-m-approval.png" alt=""></span><span class="item__name">M-Approval</span></a>
+        <a href="#" class="item" data-reveal><span class="item__logo"><img src="/assets/produk-virtual-account.png" alt=""></span><span class="item__name">Virtual Account</span></a>
+        <a href="#" class="item" data-reveal><span class="item__logo"><img src="/assets/produk-m-collection.png" alt=""></span><span class="item__name">M-Collection</span></a>
+        <a href="#" class="item" data-reveal><span class="item__logo"><img src="/assets/produk-sms-notification.png" alt=""></span><span class="item__name">Notifikasi SMS/WA</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap sec">
+    <div class="tile reach" data-reveal>
+      <div>
+        <h2>Dipercaya <span class="grad">105 BPR</span> dari Sumatera sampai Maluku</h2>
+        <p>Salah satu dari tiga vendor aplikasi BPR konvensional dengan pengguna terbanyak. Diakui dan direkomendasikan oleh OJK.</p>
+        <a href="#" class="btn btn--dark">Lihat daftar klien</a>
+      </div>
+      <div>
+        <img src="/assets/peta-indonesia.png" alt="Peta sebaran klien Sinergi" class="reach__map">
+        <ul class="islands"><li>Sumatera <b>30</b></li><li>Jawa <b>41</b></li><li>Kalimantan <b>4</b></li><li>Sulawesi <b>18</b></li><li>Bali &amp; NT <b>2</b></li><li>Maluku <b>1</b></li></ul>
+      </div>
+    </div>
+  </section>
+</main>
+<p class="label">Konsep A · Bento Terang</p>
+<script>
+  // Reveal items the first time they enter the screen. Siblings get a small stagger.
+  const io = new IntersectionObserver(list => list.forEach(en => {
+    if (!en.isIntersecting) return;
+    en.target.classList.add('in');
+    io.unobserve(en.target);
+  }), { rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('[data-reveal]').forEach(el => {
+    const sibs = [...el.parentElement.children].filter(c => c.hasAttribute('data-reveal'));
+    el.style.setProperty('--i', sibs.indexOf(el));
+    io.observe(el);
+  });
+</script>
+</body>
+</html>
