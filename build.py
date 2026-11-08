@@ -4,6 +4,7 @@
 Run:     python3 build.py
 Preview: python3 -m http.server 8000 -d dist   (then open http://localhost:8000)
 """
+import hashlib
 import html
 import json
 import shutil
@@ -14,6 +15,8 @@ DIST = ROOT / 'dist'
 SITE = 'https://sinergic.co.id'
 WA = '6285175249728'
 e = html.escape
+# Changes with every CSS edit, so browsers never mix a cached old stylesheet with new pages.
+CSS_V = hashlib.md5((ROOT / 'static/styles.css').read_bytes()).hexdigest()[:8]
 
 POSTS = json.loads((ROOT / 'content/posts.json').read_text(encoding='utf-8'))
 CLIENTS = json.loads((ROOT / 'content/clients.json').read_text(encoding='utf-8'))
@@ -141,23 +144,26 @@ DEVICE = {'coreplus': 'laptop', 'aplikasi-pelaporan-tks': 'tablet', 'e-kyc': 'ta
 
 def device(p):
     """CSS device frame for a product. Put a real screenshot at static/assets/ui/<slug>.png (or .jpg) and the
-    build shows it in the frame. Until then the screen shows the product logo on a placeholder."""
+    build shows it in the frame. Until then the screen shows a simple app sketch."""
     kind = DEVICE[p['slug']]
     shot = next((f for f in ('%s.png' % p['slug'], '%s.jpg' % p['slug']) if (ROOT / 'static/assets/ui' / f).exists()), None)
     screen = ('<img src="/assets/ui/%s" alt="">' % shot if shot else
-              '<span class="screen-ph"><img src="/assets/%s" alt=""><i></i><i></i><i></i></span>' % p['logo'])
+              '<span class="screen-ph"><b></b><i></i><i></i><i></i><i></i></span>')
     base = '<span class="device__base"></span>' if kind == 'laptop' else ''
     return '<span class="device device--%s" aria-hidden="true"><span class="device__screen">%s</span>%s</span>' % (kind, screen, base)
 
 
+CARD_TONES = ('navy', 'blue', 'teal', 'light', 'navy', 'teal', 'blue')
+
+
 def product_cards(products, wide_first=True):
-    """Colored product cards, each with its device frame. Tones cycle navy, light, blue."""
+    """Gradient product cards, each with its device frame. Colors follow the B prototype order."""
     out = []
     for n, p in enumerate(products):
         out.append('<a href="/produk-layanan/%s/" class="pc pc--%s%s"><span class="pc__visual">%s</span>'
                    '<span class="pc__body"><span class="pc__logo"><img src="/assets/%s" alt="" loading="lazy"></span>'
                    '<h3>%s</h3><span class="pc__text">%s</span><span class="pc__more">Pelajari</span></span></a>' % (
-                       p['slug'], ('navy', 'sky', 'blue')[n % 3], ' pc--wide' if wide_first and n == 0 else '', device(p),
+                       p['slug'], CARD_TONES[n % len(CARD_TONES)], ' pc--wide' if wide_first and n == 0 else '', device(p),
                        p['logo'], e('ARB+ Core Banking System' if p is FLAGSHIP else p['name']), e(p['card'])))
     return '<div class="cards">%s</div>' % ''.join(out)
 
@@ -300,6 +306,11 @@ SITE_JS = '''<script>
     item.classList.toggle('open', open);
     t.setAttribute('aria-expanded', open);
   }));
+  // Header: see-through over the hero at the top of the page, solid after the first scroll.
+  const header = document.querySelector('.header');
+  const onScroll = () => header.classList.toggle('is-solid', scrollY > 10);
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
   // Scroll reveal: blocks rise in the first time they enter the screen. Keep this list in sync with styles.css.
   const reveal = '.tile, .pc, .story, .doc, .news__item, .sec__head, .page-hero__inner, .contact__item, .missions li';
   const io = new IntersectionObserver(list => list.forEach(en => {
@@ -390,16 +401,16 @@ def page(path, title, desc, body, section='', image='', js='', in_sitemap=True):
   <meta property="og:title" content="{title}">
   <meta property="og:description" content="{desc}">
   <meta property="og:image" content="{og_image}">
-  <meta name="theme-color" content="#003d6f">
+  <meta name="theme-color" content="#06213d">
   <link rel="icon" type="image/png" href="/assets/favicon.png">
   <link rel="apple-touch-icon" href="/assets/favicon.png">
   <script>document.documentElement.classList.add('js');</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v={css_v}">
 </head>
-<body>
+<body{body_cls}>
   <a class="skip" href="#konten">Lewati ke konten</a>
   <header class="header">
     <div class="container header__bar">
@@ -421,7 +432,8 @@ def page(path, title, desc, body, section='', image='', js='', in_sitemap=True):
 </body>
 </html>
 '''.format(title=e(full_title), desc=e(desc), site=SITE, path=path, og_image=e(og_image), nav=nav_html(section),
-           body=body, footer=FOOTER, site_js=SITE_JS, js=js, wa=WA,
+           body=body, footer=FOOTER, site_js=SITE_JS, js=js, wa=WA, css_v=CSS_V,
+           body_cls=' class="has-hero"' if ('class="hero"' in body or 'class="page-hero"' in body) else '',
            chat_icon='<svg viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % ICONS['chat'])
     write(path, doc, in_sitemap)
 
@@ -505,8 +517,7 @@ def render_blocks(blocks, title):
 
 
 def build_home():
-    missions = ''.join('<li><b>0%d</b><div><h3>%s</h3><p>%s</p></div></li>' % (n, e(t), e(x))
-                       for n, (t, x) in enumerate(MISSIONS, 1))
+    missions = ''.join('<li><b>0%d</b><span>%s</span></li>' % (n, e(x)) for n, (_, x) in enumerate(MISSIONS, 1))
     docs = ''.join('<a href="/%s/" class="doc"><img src="%s" alt="%s" loading="lazy"><span>%s</span></a>' % (
         p['path'], e(p['image']), e(p['title']), e(p['title'])) for p in POSTS[3:9])
     body = '''
@@ -541,7 +552,7 @@ def build_home():
 <section class="section section--ice vision">
   <div class="container">
     <p class="kicker">Visi kami</p>
-    <p class="vision__quote">Menjadi Penyedia Solusi Core Banking System yang <span class="hl">handal dan terpercaya</span>.</p>
+    <p class="vision__quote">Menjadi Penyedia Solusi Core Banking System yang <span class="grad">handal dan terpercaya</span>.</p>
     <ol class="missions">%(missions)s</ol>
   </div>
 </section>
@@ -554,7 +565,7 @@ def build_home():
   </div>
 </section>
 
-<section class="section section--ice section--tight">
+<section class="logos logos--end">
   <div class="container">
     <p class="logos__title">Terhubung dengan</p>
     %(partners)s
