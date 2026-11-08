@@ -456,24 +456,6 @@ MOCKUP_LAPTOP = '''<div class="mockup" aria-hidden="true">
   </div>
 </div>'''
 
-# Phone screens for the two mobile apps. Abstract shapes only: no real or invented data.
-PHONE_COLLECTION = '''<div class="phone" aria-hidden="true"><div class="phone__screen">
-  <div class="phone__top"></div>
-  <i class="phone__line phone__line--short"></i>
-  <b class="phone__field"></b>
-  <i class="phone__line"></i>
-  <i class="phone__line phone__line--mid"></i>
-  <b class="phone__btn"></b>
-</div></div>'''
-
-PHONE_APPROVAL = '''<div class="phone" aria-hidden="true"><div class="phone__screen">
-  <div class="phone__top"></div>
-  <span class="phone__row"><em></em><i></i></span>
-  <span class="phone__row"><em></em><i></i></span>
-  <span class="phone__row"><em></em><i></i></span>
-  <b class="phone__btn"></b>
-</div></div>'''
-
 # "Layanan Kami" cards: (icon, title, text, link, link label). The facts come from the old site:
 # the implementor job description, the ARB+ infrastructure text, and the training posts.
 SERVICES = [
@@ -603,11 +585,11 @@ def hero_slider():
 </section>''' % (''.join(out), dots)
 
 
-def art(device, chips, bubbles):
+def art(device, chips, bubbles, disc=True):
     """Product card picture: the device on a teal disc, with floating feature chips and icon bubbles.
     Chip labels name real product features. The whole picture is decorative: the card text carries the facts."""
-    return '<div class="art" aria-hidden="true"><span class="art__disc"></span><div class="art__device">%s</div>%s%s</div>' % (
-        device,
+    return '<div class="art" aria-hidden="true">%s<div class="art__device">%s</div>%s%s</div>' % (
+        '<span class="art__disc"></span>' if disc else '', device,
         ''.join('<span class="chip chip--%d">%s<b>%s</b></span>' % (n, icon(ic, 'ico'), e(t)) for n, (ic, t) in enumerate(chips, 1)),
         ''.join('<span class="bubble bubble--%d">%s</span>' % (n, icon(ic, 'ico')) for n, ic in enumerate(bubbles, 1)))
 
@@ -629,13 +611,14 @@ def build_home():
         <span class="scard__more">%s →</span>
       </a>''' % (href, n, icon(ic, 'ico'), e(title), e(txt), e(more))
         for n, (ic, title, txt, href, more) in enumerate(SERVICES, 1))
+    # The three card pictures are AI-generated illustrations (Gemini), not photos of Sinergi staff or clients.
     featured = [
-        (FLAGSHIP, art('<div class="pcard__laptop">%s</div>' % MOCKUP_LAPTOP,
-                       [('cloud', 'Cloud Tier 3'), ('shield', 'Sesuai POJK')], ['db', 'users'])),
-        (PRODUCT['m-collection'], art(PHONE_COLLECTION,
-                                      [('check', 'Setoran tercatat'), ('printer', 'Cetak struk')], ['wallet', 'pin'])),
-        (PRODUCT['m-approval'], art(PHONE_APPROVAL,
-                                    [('check', 'Disetujui'), ('pin', 'Dari luar kantor')], ['shield', 'users'])),
+        (FLAGSHIP, art('<img src="/assets/ilustrasi-arb.jpg" alt="" class="art__frame" width="720" height="538" loading="lazy">',
+                       [('cloud', 'Cloud Tier 3'), ('shield', 'Sesuai POJK')], ['db', 'users'], disc=False)),
+        (PRODUCT['m-collection'], art('<img src="/assets/ilustrasi-m-collection.jpg" alt="" class="art__portrait" width="480" height="480" loading="lazy">',
+                                      [('check', 'Setoran tercatat'), ('printer', 'Cetak struk')], ['wallet', 'pin'], disc=False)),
+        (PRODUCT['m-approval'], art('<img src="/assets/ilustrasi-m-approval.jpg" alt="" class="art__portrait" width="480" height="480" loading="lazy">',
+                                    [('check', 'Disetujui'), ('pin', 'Dari luar kantor')], ['shield', 'users'], disc=False)),
     ]
     pcards = ''.join('''
       <a href="/produk-layanan/%s/" class="pcard">
